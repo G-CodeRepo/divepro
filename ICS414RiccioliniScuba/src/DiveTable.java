@@ -299,44 +299,18 @@ public class DiveTable {
 	
 	/**
 	 * determine pressure group from the given index of the time
-	 * @param ArrayIndex
+	 * @param arrayIndex
 	 * @return
 	 */
-	private char getPressureGroupChar (int ArrayIndex) {
-		char pg = ' ';
-		
-		switch (ArrayIndex) { // note array index starts at zero
-		case 0:		pg = 'A';	break;
-		case 1: 	pg = 'B';	break;
-		case 2:		pg = 'C';	break;
-		case 3:		pg = 'D';	break;
-		case 4:		pg = 'E';	break;
-		case 5:		pg = 'F';	break;
-		case 6:		pg = 'G';	break;
-		case 7:		pg = 'H';	break;
-		case 8:		pg = 'I';	break;
-		case 9:		pg = 'J';	break;
-		case 10:	pg = 'K';	break;
-		case 11:	pg = 'L';	break;
-		case 12:	pg = 'M';	break;
-		case 13:	pg = 'N';	break;
-		case 14:	pg = 'O';	break;
-		case 15:	pg = 'P';	break;
-		case 16:	pg = 'Q';	break;
-		case 17:	pg = 'R';	break;
-		case 18:	pg = 'S';	break;
-		case 19:	pg = 'T';	break;
-		case 20:	pg = 'U';	break;
-		case 21:	pg = 'V';	break;
-		case 22:	pg = 'W';	break;
-		case 23:	pg = 'X';	break;
-		case 24:	pg = 'Y';	break;
-		case 25:	pg = 'Z';	break;
-		default:	
-				System.err.println("ERROR: Should no be here.");		// temp error
-				break;
+	private char getPressureGroupChar (int arrayIndex) {
+		final char[] ALPHA = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H','I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X', 'Y', 'Z'};
+
+		// TEMP ERROR CHECK. CALLING METHOD NEEDS TO CATCH ERROR
+		if ((arrayIndex < 0) || arrayIndex > ALPHA.length-1) {	
+			throw new IllegalArgumentException("ERROR: Array index needs to be between 0 and " + (ALPHA.length-1));	
+		} else {
+			return ALPHA[arrayIndex];	// return 
 		}
-		return pg; 
 	}
 	
 	/**
@@ -361,9 +335,9 @@ public class DiveTable {
 	
 	// dive table
 	public static void main(String[] args) {
-		int depth = 75;
-		int time = 20;
-		double surface = 0.47;		// will change to a float if needed
+		int depth = 49;
+		int time = 42;
+		double surface = 0.41;		// will change to a float if needed
 		DiveTable dt = new DiveTable(depth, time, surface);
 		System.out.println("<<INCOMPLETE DIVE TABLE CLASS>>");
 		System.out.println(dt.getResults());
