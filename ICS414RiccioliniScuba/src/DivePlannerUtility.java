@@ -3,7 +3,7 @@
  * DiveProfileUtility class is used for assorted searching and conversion algorithms
  * @author Gerald Abut
  */
-public class DiveProfileUtility {
+public class DivePlannerUtility {
 	
 	// TEMP BINARY SEARCHES (WILL IMPLEMENT GENERICS SOON)
 	
