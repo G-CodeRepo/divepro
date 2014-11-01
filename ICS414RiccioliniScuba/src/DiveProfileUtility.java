@@ -1,9 +1,9 @@
 /**
  * ICS 414 Team Ricciolini Scuba Project
- * Serach class is used for assorted searching algorithms
+ * DiveProfileUtility class is used for assorted searching and conversion algorithms
  * @author Gerald Abut
  */
-public class Search {
+public class DiveProfileUtility {
 	
 	// TEMP BINARY SEARCHES (WILL IMPLEMENT GENERICS SOON)
 	
@@ -64,4 +64,20 @@ public class Search {
 			return left - 1;											// item not found but NOT YET at the end of the list. this means that searchItem must be rounded up
 		}
 	}	
+	
+	/**
+	 * convert meters to feet
+	 * @return
+	 */
+	public int unitConverter(int meter) {
+		// NOT YET IMPLEMENTED
+		
+		
+		
+		
+		
+		
+		
+		return 0;	// temp
+	}
 }
