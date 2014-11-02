@@ -1,3 +1,4 @@
+package divePlan;
 /**
  * ICS 414 Team Ricciolini Scuba Project
  * DiveTable class is used to create an instance of a dive table
@@ -10,7 +11,8 @@ import java.util.LinkedHashMap;
 public class DiveTable {
 	private LinkedHashMap<Integer, int[]> depthTimes;
 	private LinkedHashMap<Character, double[]> surfaceIntervalTimes;
-	private LinkedHashMap<Integer, int[]> residualNitrogen;
+	private LinkedHashMap<Integer, int[]> residualNitrogenTimes;
+	private LinkedHashMap<Integer, int[]> actualBottomTimes;
 	private int[] validDepths;
 	private char[] pressureGroups;
 
@@ -21,7 +23,7 @@ public class DiveTable {
 		this.validDepths = DEPTHS;
 		this.pressureGroups = ALPHA;
 		
-		// times for each depth
+		// times for each depth (ALSO USED FOR RESIDUAL NITROGEN TIMES (RNT) UP TO 130 FT ONLY, NO 140 FT)
 		final int[] MINUTES_D35 	= {10, 19, 25, 29, 32, 36, 40, 44, 48, 52, 57, 62, 67, 73, 79, 85, 92, 100, 108, 117, 127, 139, 152, 168, 188, 205};
 		final int[] MINUTES_D40 	= {9, 16, 22, 25, 27, 31, 34, 37, 40, 44, 48, 51, 55, 60, 64, 69, 74, 79, 85, 91, 97, 104, 11, 120, 129, 140};
 		final int[] MINUTES_D50 	= {7, 13, 17, 19, 21, 24, 26, 28, 31, 33, 36, 39, 41, 44, 47, 50, 53, 57, 60, 63, 67, 71, 75, 80};
@@ -30,12 +32,12 @@ public class DiveTable {
 		final int[] MINUTES_D80 	= {4, 8, 10, 11, 13, 14, 15, 17, 18, 19, 21, 22, 23, 25, 26, 28, 29, 30};
 		final int[] MINUTES_D90 	= {4, 7, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25};
 		final int[] MINUTES_D100 	= {3, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-		final int[] MINUTES_D110 	= {3, 6, 7, 8, 9, 10, 11, 12, 13, 13, 14, 15, 16};			// the second 13 represents the "arrow" value on the dive table
-		final int[] MINUTES_D120	= {3, 5, 6, 7, 8, 9, 10, 11, 11, 12, 13};					// the second 11 represents the "arrow" value on the dive table
-		final int[] MINUTES_D130	= {3, 5, 6, 7, 7, 8, 9, 10};								// the second  7 represents the "arrow" value on the dive table
+		final int[] MINUTES_D110 	= {3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 14, 15, 16};			// the second 14 represents the "arrow" value on the dive table
+		final int[] MINUTES_D120	= {3, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13};					// the second 12 represents the "arrow" value on the dive table
+		final int[] MINUTES_D130	= {3, 5, 6, 7, 8, 8, 9, 10};								// the second  8 represents the "arrow" value on the dive table
 		final int[] MINUTES_D140	= {4, 4, 5, 6, 7, 8};										// the first   4 represents the "arrow" value on the dive table
 																								// THESE ARE JUST TEMP FOR THE => SYMBOL (OR NOT)
-		// depth table
+		// depth table 
 		this.depthTimes = new LinkedHashMap<Integer, int[]>();
 		this.depthTimes.put(this.validDepths[0], MINUTES_D35);	
 		this.depthTimes.put(this.validDepths[1], MINUTES_D40);
@@ -50,32 +52,46 @@ public class DiveTable {
 		this.depthTimes.put(this.validDepths[10], MINUTES_D130);
 		this.depthTimes.put(this.validDepths[11], MINUTES_D140);
 		
-		// residual nitrogen for each depth
-		final int[] NITROGEN_D35 	= {195, 186, 180, 176, 173, 169, 165, 161, 157, 153, 148, 143, 138, 132, 126, 120, 113, 105, 97, 88, 78, 66, 53, 37, 17};
-		final int[] NITROGEN_D40 	= {131, 124, 118, 115, 113, 109, 106, 103, 100, 96, 92, 89, 85, 80, 76, 71, 66, 61, 55, 49, 43, 36, 29, 20, 11};
-		final int[] NITROGEN_D50 	= {73, 67, 63, 61, 59, 56, 54, 52, 49, 47, 44, 42, 39, 36, 33, 30, 27, 23, 20, 17, 13, 9, 5};
-		final int[] NITROGEN_D60 	= {49, 44, 41, 39, 38, 36, 34, 32, 30, 28, 26, 24, 22, 20, 18, 16, 13, 11, 8, 6, 3, 1};
-		final int[] NITROGEN_D70 	= {35, 31, 28, 27, 25, 24, 22, 21, 19, 18, 16, 14, 13, 11, 9, 7, 6, 4, 2};
-		final int[] NITROGEN_D80 	= {26, 22, 20, 19, 17, 16, 15, 13, 12, 11, 9, 8, 7, 5, 4, 2};
-		final int[] NITROGEN_D90 	= {21, 18, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 4, 3, 2};
-		final int[] NITROGEN_D100 	= {17, 14, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2};
-		final int[] NITROGEN_D110	= {13, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2};						// the 2 twos are correct
-		final int[] NITROGEN_D120	= {10, 8, 7, 6, 5, 4, 3, 2};
-		final int[] NITROGEN_D130	= {7, 5, 4, 3};												// there is no depth 140 for residual nitrogen
-		
 		// residual nitrogen table
-		this.residualNitrogen = new LinkedHashMap<Integer, int[]>();
-		this.residualNitrogen.put(this.validDepths[0], NITROGEN_D35);
-		this.residualNitrogen.put(this.validDepths[1], NITROGEN_D40);
-		this.residualNitrogen.put(this.validDepths[2], NITROGEN_D50);
-		this.residualNitrogen.put(this.validDepths[3], NITROGEN_D60);
-		this.residualNitrogen.put(this.validDepths[4], NITROGEN_D70);
-		this.residualNitrogen.put(this.validDepths[5], NITROGEN_D80);
-		this.residualNitrogen.put(this.validDepths[6], NITROGEN_D90);
-		this.residualNitrogen.put(this.validDepths[7], NITROGEN_D100);
-		this.residualNitrogen.put(this.validDepths[8], NITROGEN_D110);
-		this.residualNitrogen.put(this.validDepths[9], NITROGEN_D120);
-		this.residualNitrogen.put(this.validDepths[10], NITROGEN_D130);							// there is no depth 140 for residual nitrogen
+		this.residualNitrogenTimes = new LinkedHashMap<Integer, int[]>();
+		this.residualNitrogenTimes.put(this.validDepths[0], MINUTES_D35);
+		this.residualNitrogenTimes.put(this.validDepths[1], MINUTES_D40);
+		this.residualNitrogenTimes.put(this.validDepths[2], MINUTES_D50);
+		this.residualNitrogenTimes.put(this.validDepths[3], MINUTES_D60);
+		this.residualNitrogenTimes.put(this.validDepths[4], MINUTES_D70);
+		this.residualNitrogenTimes.put(this.validDepths[5], MINUTES_D80);
+		this.residualNitrogenTimes.put(this.validDepths[6], MINUTES_D90);
+		this.residualNitrogenTimes.put(this.validDepths[7], MINUTES_D100);
+		this.residualNitrogenTimes.put(this.validDepths[8], MINUTES_D110);
+		this.residualNitrogenTimes.put(this.validDepths[9], MINUTES_D120);
+		this.residualNitrogenTimes.put(this.validDepths[10], MINUTES_D130);							// there is no depth 140 for residual nitrogen
+		
+		// actual bottom times for each depth
+		final int[] ABT_D35 	= {195, 186, 180, 176, 173, 169, 165, 161, 157, 153, 148, 143, 138, 132, 126, 120, 113, 105, 97, 88, 78, 66, 53, 37, 17};
+		final int[] ABT_D40 	= {131, 124, 118, 115, 113, 109, 106, 103, 100, 96, 92, 89, 85, 80, 76, 71, 66, 61, 55, 49, 43, 36, 29, 20, 11};
+		final int[] ABT_D50 	= {73, 67, 63, 61, 59, 56, 54, 52, 49, 47, 44, 42, 39, 36, 33, 30, 27, 23, 20, 17, 13, 9, 5};
+		final int[] ABT_D60 	= {49, 44, 41, 39, 38, 36, 34, 32, 30, 28, 26, 24, 22, 20, 18, 16, 13, 11, 8, 6, 3, 1};
+		final int[] ABT_D70 	= {35, 31, 28, 27, 25, 24, 22, 21, 19, 18, 16, 14, 13, 11, 9, 7, 6, 4, 2};
+		final int[] ABT_D80 	= {26, 22, 20, 19, 17, 16, 15, 13, 12, 11, 9, 8, 7, 5, 4, 2};
+		final int[] ABT_D90 	= {21, 18, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 4, 3, 2};
+		final int[] ABT_D100 	= {17, 14, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2};
+		final int[] ABT_D110	= {13, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2};						// the 2 twos are correct
+		final int[] ABT_D120	= {10, 8, 7, 6, 5, 4, 3, 2};
+		final int[] ABT_D130	= {7, 5, 4, 3};												// there is no depth 140 for actual bottom times
+		
+		// actual bottom time table
+		this.actualBottomTimes = new LinkedHashMap<Integer, int[]>();
+		this.actualBottomTimes.put(this.validDepths[0],	ABT_D35);
+		this.actualBottomTimes.put(this.validDepths[1], ABT_D40);
+		this.actualBottomTimes.put(this.validDepths[2], ABT_D50);
+		this.actualBottomTimes.put(this.validDepths[3], ABT_D60);
+		this.actualBottomTimes.put(this.validDepths[4], ABT_D70);
+		this.actualBottomTimes.put(this.validDepths[5], ABT_D80);
+		this.actualBottomTimes.put(this.validDepths[6], ABT_D90);
+		this.actualBottomTimes.put(this.validDepths[7], ABT_D100);
+		this.actualBottomTimes.put(this.validDepths[8], ABT_D110);
+		this.actualBottomTimes.put(this.validDepths[9], ABT_D120);
+		this.actualBottomTimes.put(this.validDepths[10],ABT_D130);							// there is no depth 140 for actual bottom time
 
 		// surface interval table	
 		// the list of surface intervals goes backwards from highest times to lowest times
@@ -156,8 +172,16 @@ public class DiveTable {
 	 * get the hashmap of residual nitrogen
 	 * @return
 	 */
-	public LinkedHashMap<Integer, int[]> getResidualNitrogen() {
-		return this.residualNitrogen;
+	public LinkedHashMap<Integer, int[]> getResidualNitrogenTimes() {
+		return this.residualNitrogenTimes;
+	}
+	
+	/**
+	 * get a hashmap of actual bottom times
+	 * @return
+	 */
+	public LinkedHashMap<Integer, int[]> getActualBottomTimes() {
+		return this.actualBottomTimes;
 	}
 	
 	/**

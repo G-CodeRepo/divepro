@@ -1,3 +1,6 @@
+package divePlan;
+import java.util.LinkedHashMap;
+
 /**
  * ICS 414 Team Ricciolini Scuba Project
  * DiveProfileUtility class is used for assorted searching and conversion algorithms
@@ -63,7 +66,19 @@ public class DivePlannerUtility {
 		} else {
 			return left - 1;											// item not found but NOT YET at the end of the list. this means that searchItem must be rounded up
 		}
-	}	
+	}
+	
+	/**
+	 * get the time index
+	 * @param searchTimeAtDepth
+	 * @param desiredDepth
+	 * @return
+	 */
+	public static int getTimeIndex(int desiredDepth, int searchTimeAtDepth) {
+		DiveTable diveTable = new DiveTable();
+		LinkedHashMap<Integer, int[]> validDepthTimes = diveTable.getDepthTimes();
+		return DivePlannerUtility.binarySearch(validDepthTimes.get(desiredDepth), searchTimeAtDepth);
+	}
 	
 	/**
 	 * convert meters to feet
