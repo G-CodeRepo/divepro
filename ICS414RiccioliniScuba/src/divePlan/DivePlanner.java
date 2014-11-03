@@ -343,6 +343,5 @@ public class DivePlanner {
 		System.out.println("<<DIVEPLANNER: DEBUG>>");
 		System.out.println(dt.getResults());
 		System.out.println("SLIGHT CHANGE TEST");
-		
 	}
 }
