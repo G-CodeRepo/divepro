@@ -9,7 +9,6 @@ package divePlan;
 // SAVING CONCURRENT DIVE PLANS NOT YET IMPLEMENTED (MOST LIKING IN A SEPARATE CLASS). THIS DIVE PROFILE ONLY WORKS FOR A SINGLE DIVE.
 // THIS CLASS NEEDS TESTING
 
-
 import java.util.LinkedHashMap;
 
 public class DivePlanner {
@@ -80,7 +79,9 @@ public class DivePlanner {
 		
 		// DiveProfileManager CLASS MUST BE IMPLEMENTED HERE TO BE ABLE TO HAVE MULTIPLE DIVES (WILL IMPLEMENT SOON)
 		
-
+		// NEEDS MINIMUM SURFACE INTERVAL (REQUIRES CALCULATING FOR THE TOP NUMBER OF THE SURFACE INTERVAL)
+		// NEEDS A DECOMPRESSION STOP FOR SECOND DIVE
+		
 		
 		
 		
@@ -99,6 +100,8 @@ public class DivePlanner {
 				 			 this.currDecompressionStop,		this.currSurfaceInterval, 		this.currPressureGroup_SI,
 				 			 this.currNextDiveDepth,			this.currResidualNitrogenTime, 	this.currActualBottomTime, 	
 				 			 this.currTotalBottomTime);
+		
+		// ADD THE NEW DIVE IN THE DIVE MANAGER HERE
 	}
 	
 										  	
@@ -339,5 +342,6 @@ public class DivePlanner {
 		DivePlanner dt = new DivePlanner(depth, bottomTime, surfaceInterval, nextDiveDepth);
 		System.out.println("<<DIVEPLANNER: DEBUG>>");
 		System.out.println(dt.getResults());
+		System.out.println("PRINT TEST");
 	}
 }
