@@ -342,5 +342,6 @@ public class DivePlanner {
 		DivePlanner dt = new DivePlanner(depth, bottomTime, surfaceInterval, nextDiveDepth);
 		System.out.println("<<DIVEPLANNER: DEBUG>>");
 		System.out.println(dt.getResults());
+		
 	}
 }
