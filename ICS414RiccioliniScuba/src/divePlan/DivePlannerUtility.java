@@ -45,7 +45,7 @@ public class DivePlannerUtility {
 	 * @param searchItem
 	 * @return
 	 */
-	public static int binarySearch(double[] timeList, double searchItem) {		
+	public static int binarySearch(double[] timeList, double searchItem) {			
 		int left = 0;
 		int right = timeList.length-1;
 		int mid = 0;
@@ -60,11 +60,11 @@ public class DivePlannerUtility {
 				return mid;
 			}
 		}
-		
-		if ((left-1 > timeList.length-1) || (left == 0)) {				// compensate for end of list
-			return left;												// item not found but but at the end of the list. this means that this is the limit it can go up to
+	
+		if ((right == 0) || (right >= timeList.length-1)) {				// compensate for end of list
+			return right-1;												// item not found but but at the end of the list. this means that this is the limit it can go up to
 		} else {
-			return left - 1;											// item not found but NOT YET at the end of the list. this means that searchItem must be rounded up
+			return right;												// item not found but NOT YET at the end of the list. this means that searchItem must be rounded up
 		}
 	}
 	

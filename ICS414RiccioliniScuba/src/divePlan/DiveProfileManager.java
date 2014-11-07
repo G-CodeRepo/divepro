@@ -1,5 +1,7 @@
 package divePlan;
 
+import java.util.LinkedList;
+
 
 /**
  * ICS 414 Team Ricciolini Scuba Project
@@ -11,6 +13,17 @@ public class DiveProfileManager {
 	public DiveProfileManager() {
 		// NOT YET IMPLEMENTED
 
+		
+		
+		
+		
+		
+		
+	}
+	
+	public void saveDive (String day, LinkedList<Dive> dive) {
+		// NOT YET IMPLEMENTED
+		
 		
 		
 		

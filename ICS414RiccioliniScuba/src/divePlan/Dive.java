@@ -7,27 +7,29 @@ package divePlan;
 
 public class Dive {
 	private int depth;
-	private int bottomTime;
-	private char pressureGroup;
-	private char pressureGroup_SI;
+	private char currPressureGroup;
+	private char previousPressureGroupFromTBT;
+	private char newPressureGroupFromTBT;
+	private char newPressureGroupAfterLastDive;
 	private double surfaceInterval;
-	private int nextDiveDepth;
+	private int getAdjustedNoDecompressionLimitTime;
 	private int residualNitrogenTime;
 	private int actualBottomTime;
 	private int totalBottomTime;
 	private boolean decompressionStop;
 	
-	public Dive(int depth, 					int bottomTime, 		char pressureGroup, 	
-				boolean decompressionStop,  double surfaceInterval, char pressureGroup_SI,
-				int nextDiveDepth,			int residualNitrogen, 	int actualBottomTime, 	
-				int totalBottomTime) {
+	public Dive(int depth, 											
+				char previousPressureGroupTBT, 				char newPressureGroupAfterLastDive ,	boolean decompressionStop,  				
+				double surfaceInterval, 					char newPressureGroupFromTBT,			 
+			    int getAdjustedNoDecompressionLimitTime,	int residualNitrogen,   				int actualBottomTime, 	
+			    int totalBottomTime) {		
 		this.depth = depth;
-		this.bottomTime = bottomTime;
-		this.pressureGroup = pressureGroup;
+		this.previousPressureGroupFromTBT = previousPressureGroupTBT;
+		this.newPressureGroupFromTBT = newPressureGroupFromTBT;
+		this.newPressureGroupAfterLastDive = newPressureGroupAfterLastDive;
 		this.decompressionStop = decompressionStop;
 		this.surfaceInterval = surfaceInterval;
-		this.pressureGroup_SI = pressureGroup_SI;
-		this.nextDiveDepth = nextDiveDepth;
+		this.getAdjustedNoDecompressionLimitTime = getAdjustedNoDecompressionLimitTime;
 		this.residualNitrogenTime = residualNitrogen;
 		this.actualBottomTime = actualBottomTime;
 		this.totalBottomTime = totalBottomTime;
@@ -40,21 +42,35 @@ public class Dive {
 	public int getDepth() {
 		return this.depth;
 	}
-	
-	/**
-	 * get the bottom time of the dive
-	 * @return
-	 */
-	public int getBottomTime() {
-		return this.bottomTime;
-	}
-	
+		
 	/**
 	 * get the pressure group
 	 * @return
 	 */
 	public char getPressureGroup() {
-		return this.pressureGroup;
+		return this.currPressureGroup;
+	}
+	
+
+	
+	/**
+	 * get the next pressure group based on the TBT
+	 * @return
+	 */
+	public char getPreviousPressureGroupFromTBT() {
+		return this.previousPressureGroupFromTBT;
+	}
+	
+	public char getNewPressureGroupFromTBT() {
+		return this.newPressureGroupFromTBT;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public char getNewPressureGroupAfterLastDive() {
+		return this.newPressureGroupAfterLastDive;
 	}
 	
 	/**
@@ -65,20 +81,14 @@ public class Dive {
 		return this.decompressionStop;
 	}
 	
-	/**
-	 * get the pressure group associated with the surface interval
-	 * @return
-	 */
-	public char getPressureGroup_SI() {
-		return this.pressureGroup_SI;
-	}
+
 	
 	/**
-	 * get the next dive depth after the surface interval
+	 * get the adjusted no decompression limit (ANDL) time
 	 * @return
 	 */
-	public int getNextDiveDepth(){
-		return this.nextDiveDepth;
+	public int getAdjustedNoDecompressionLimitTime(){
+		return this.getAdjustedNoDecompressionLimitTime;	
 	}
 	
 	/**
@@ -112,7 +122,7 @@ public class Dive {
 	 * residual nitrogen time (RNT) + actual bottom time (ABT)
 	 * @return
 	 */
-	public int getTotalBottomtime() {
+	public int getTotalBottomTime() {
 		return this.totalBottomTime;
 	}
 }

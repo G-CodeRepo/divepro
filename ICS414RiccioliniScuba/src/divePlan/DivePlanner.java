@@ -6,125 +6,130 @@ package divePlan;
  */
 
 
-// SAVING CONCURRENT DIVE PLANS NOT YET IMPLEMENTED (MOST LIKING IN A SEPARATE CLASS). THIS DIVE PROFILE ONLY WORKS FOR A SINGLE DIVE.
+// SAVING CONCURRENT DIVE PLANS NOT YET IMPLEMENTED (MOST LIKING IN A SEPARATE CLASS). 
+// DIVEPLANNER NOW WORKS WITH MULTIPLE DIVES
 // THIS CLASS NEEDS TESTING
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 
 public class DivePlanner {
-	private int depthInput;
-	private int bottomTimeInput;
-	private double surfaceIntervalInput;
-	private int nextDiveDepthInput;
-	private int currDepth;
-	private int currBottomTime;
+	private int currDiveDepth;
 	private boolean currDecompressionStop;
-	private char currPressureGroup;
-	private char currPressureGroup_SI;
+	private char currPressureGroupAtDepth;
+	private char currNewPressureGroupFromTBT; 
+	private char currNewPressureGroupAfterPreviousDive;
+	private char currPreviousPressureGroupFromTBT;
 	private double currSurfaceInterval;
-	private int currNextDiveDepth;
+	private int adjustedNoDecompressionLimitTime;
 	private int currResidualNitrogenTime;
 	private int currActualBottomTime;
+	private int currAdjustedActualBottomTime;
 	private int currTotalBottomTime;
 	DiveTable diveTable;
 	Dive dive;
+	LinkedList<Dive> previousDives;
 	DiveProfileManager diveManager;	// (NOT YET IMPLEMENTED)
-		
+	
 	// Constructor
-	public DivePlanner(int diveDepth, int bottomTime, double timeOnSurface, int nextDiveDepth) {
+	public DivePlanner(int diveDepth, int bottomTime, double timeOnSurface) {
 		this.diveTable = new DiveTable();
-		
-		// save values from user input (USE FOR DEBUGGING)
-		this.depthInput = diveDepth;
-		this.bottomTimeInput= bottomTime;
-		this.surfaceIntervalInput = timeOnSurface;
-		this.nextDiveDepthInput = nextDiveDepth;
+		this.previousDives = new LinkedList<Dive>();
 		
 		// create a dive profile
-		this.createDiveProfile(diveDepth, bottomTime, timeOnSurface, nextDiveDepth);
-		
+		this.addDive(diveDepth, bottomTime, timeOnSurface); 	
 	}
 	
 	// Overloaded Constructor
 	public DivePlanner() {
 		this.diveTable = new DiveTable();
+		this.previousDives = new LinkedList<Dive>();
 		
 		// set default values
-		this.depthInput = 0;
-		this.bottomTimeInput= 0;
-		this.surfaceIntervalInput = 0;
-		this.nextDiveDepthInput = 0;
-		this.currDepth = 0;
-		this.currBottomTime = 0;
-		this.currPressureGroup = ' ';
+		this.currDiveDepth = 0;
+		this.currPressureGroupAtDepth = ' ';
+		this.currNewPressureGroupFromTBT = ' ';
+		this.currNewPressureGroupAfterPreviousDive = ' ';
+		this.currPreviousPressureGroupFromTBT = ' ';
 		this.currDecompressionStop = false;
-		this.currPressureGroup_SI = ' ';
 		this.currSurfaceInterval = 0;
-		this.currNextDiveDepth = 0;
+		this.adjustedNoDecompressionLimitTime = 0;
 		this.currResidualNitrogenTime = 0;
 		this.currActualBottomTime = 0;
+		this.currAdjustedActualBottomTime = 0;
 		this.currTotalBottomTime = 0;
 	}
-	
-	
+		
 	/**
-	 * create a dive profile
-	 * calculate depth, bottomTime, pressureGroup, and pressureGroup_SI, and residualNitrogen
-	 * @param diveDepth
+	 * add a dive
+	 * @param newDiveDepth
 	 * @param bottomTime
-	 * @param timeOnSurface
-	 * @param nextDive
+	 * @param surfaceInterval
 	 */
-	public void createDiveProfile(int diveDepth, int bottomTime, double timeOnSurface, int nextDive) {
+	private void addDive(int newDiveDepth, int bottomTime, double surfaceInterval) { 
 		
-		// DiveProfileManager CLASS MUST BE IMPLEMENTED HERE TO BE ABLE TO HAVE MULTIPLE DIVES (WILL IMPLEMENT SOON)
+		// TO-DO-LIST
+		// CHECK IF THE NEXT DIVE DEPTH IS VALID (NEXT DIVE DEPTH MUST NOT EXCEED PREVIOUS DIVE)
+		// CHECK TO SEE IF THE GIVEN diveDepth IS VALID FOR THE NEXT DIVE
+		// CHECK IF THE GIVEN bottomTime IS VALID FOR THE NEXT DIVE
+		// NEEDS TO CREATE GETTERS FOR SOME INSTANCE VARIABLES
+						
+		this.currDiveDepth = this.adjustDepth(newDiveDepth);
+		this.currActualBottomTime = bottomTime;	  // ABT IS NOT SUPPOSE TO BE ADJUSTED
+		this.currAdjustedActualBottomTime = this.adjustActualBottomTime(this.currDiveDepth, bottomTime); // adjust depth to work to look it up in the table
 		
-		// NEEDS MINIMUM SURFACE INTERVAL (REQUIRES CALCULATING FOR THE TOP NUMBER OF THE SURFACE INTERVAL)
-		// NEEDS A DECOMPRESSION STOP FOR SECOND DIVE
+		if (this.previousDives.size() > 0) {
+			// MULTIPLE DIVES 
+			this.currPreviousPressureGroupFromTBT = this.previousDives.getLast().getNewPressureGroupFromTBT(); //getNewPressureGroupAfterLastDive();;
+			this.currSurfaceInterval = this.adjustSurfaceInterval(this.currPreviousPressureGroupFromTBT, surfaceInterval);
+			this.currNewPressureGroupAfterPreviousDive = this.calcPressureGroup_SI(this.currPreviousPressureGroupFromTBT, this.currSurfaceInterval);			
+			this.currResidualNitrogenTime = this.calcResidualNitrogenTime(this.currDiveDepth, this.currNewPressureGroupAfterPreviousDive);
+			this.currTotalBottomTime = this.calcTotalBottomTime(this.currResidualNitrogenTime, this.currActualBottomTime);
+			this.currNewPressureGroupFromTBT = this.diveTable.getPressureGroup(DivePlannerUtility.getTimeIndex(this.currDiveDepth,this.currTotalBottomTime));
+		} else {
+			// SINGLE DIVE			
+			this.currPreviousPressureGroupFromTBT = this.diveTable.getPressureGroup(DivePlannerUtility.getTimeIndex(this.currDiveDepth, this.currAdjustedActualBottomTime));
+			this.currNewPressureGroupAfterPreviousDive = this.currPreviousPressureGroupFromTBT; 	// SAME AS TBT FOR THE FIRST DIVE ONLY
+			this.currResidualNitrogenTime = 0; 			// THERE IS NO RESIDUAL NITROGEN FOR THE FIRST DIVE ONLY
+			this.currActualBottomTime = bottomTime;		// ABT IS NOT SUPPOSE TO BE ADJUSTED
+			this.currSurfaceInterval = 0;
+			this.currTotalBottomTime = this.currActualBottomTime; 	// SAME AS ACTUAL BOTTOM TIME FOR THE FIRST DIVE ONLY
+			this.currNewPressureGroupFromTBT = this.currPreviousPressureGroupFromTBT;
+		}
+
+		this.currDecompressionStop = this.requireDecompressionStop(this.currDiveDepth, this.currAdjustedActualBottomTime);
+		this.adjustedNoDecompressionLimitTime = this.calcAdjustedNoDecompressionLimitTime(this.currDiveDepth, this.currNewPressureGroupAfterPreviousDive);
+
+		this.dive = new Dive(this.currDiveDepth, 					this.currPreviousPressureGroupFromTBT, 		this.currNewPressureGroupAfterPreviousDive,			
+							 this.currDecompressionStop,			this.currSurfaceInterval, 					this.currNewPressureGroupFromTBT,	
+							 this.adjustedNoDecompressionLimitTime,		this.currResidualNitrogenTime, 				
+							 this.currActualBottomTime, 			this.currTotalBottomTime);
 		
-		
-		
-		
-		// create a new dive
-		this.currDepth = this.adjustDepth(diveDepth);
-		this.currBottomTime = this.adjustBottomTime(this.currDepth, bottomTime);
-		this.currPressureGroup = this.diveTable.getPressureGroup(DivePlannerUtility.getTimeIndex(this.currDepth, this.currBottomTime));
-		this.currSurfaceInterval = this.adjustSurfaceInterval(this.currPressureGroup, timeOnSurface);
-		this.currPressureGroup_SI = this.calcPressureGroup_SI(this.currPressureGroup, this.currSurfaceInterval);
-		this.currNextDiveDepth = this.adjustDepth(nextDive);
-		this.currResidualNitrogenTime = this.calcResidualNitrogenTime(this.currNextDiveDepth, this.currPressureGroup_SI);
-		this.currActualBottomTime = this.calcActualBottomTime(this.currNextDiveDepth, this.currPressureGroup_SI);
-		this.currTotalBottomTime = this.calcTotalBottomTime(this.currResidualNitrogenTime, this.currActualBottomTime);
-		this.currDecompressionStop = this.requireDecompressionStop(this.currDepth, this.currBottomTime);
-		this.dive = new Dive(this.currDepth, 					this.currBottomTime, 			this.currPressureGroup,
-				 			 this.currDecompressionStop,		this.currSurfaceInterval, 		this.currPressureGroup_SI,
-				 			 this.currNextDiveDepth,			this.currResidualNitrogenTime, 	this.currActualBottomTime, 	
-				 			 this.currTotalBottomTime);
-		
-		// ADD THE NEW DIVE IN THE DIVE MANAGER HERE
+		// add to recent dives
+		this.previousDives.add(this.dive);
+
 	}
 	
-										  	
+									
 	/**
-	 * retrieve results from dive profile calculations
+	 * prints out all the dives that were entered
 	 * USE ONLY FOR DEBUGGING
-	 * @return
 	 */
-	public String getResults() {
-		return "Inputed Depth (ft):\t\t\t" + this.getDepthInput() + "\n" +
-			   "Depth (ft):\t\t\t\t" + this.getCurrDepth() + "\n" +
-			   "Inputed Bottom Time (min):\t\t" + this.getBottomTimeInput() + "\n" +
-			   "Bottom Time (min):\t\t\t" + this.getCurrBottomTime() + "\n" +
-			   "Pressure Group:\t\t\t\t" + this.getCurrPressureGroup() + "\n" +
-			   "Require Decompression Stop:\t\t" + this.getCurrDecompressionStop() + "\n" +
-			   "Inputed Surface Interval (min):\t\t" + this.getSurfaceIntervalInput() + "\n" +
-			   "Surface Interval (min):\t\t\t" + this.getCurrSurfaceInterval() + "\n" + 					
-			   "Pressure Group After Surface Interval:\t" + this.getCurrPressureGroup_SI() + "\n" + 
-			   "Next Dive Depth Input (ft):\t\t" + this.getNextDiveDepthInput() + "\n" +					
-			   "Next Dive Depth (ft):\t\t\t" + this.getCurrNextDiveDepth() + "\n" +			
-			   "Residual Nitrogen Time (RNT) (min):\t" + this.getCurrResidualNitrogenTime() + "\n" +
-			   "Actual Bottom Time (ABT) (min):\t\t" + this.getCurrActualBottomTime() + "\n" +
-			   "Total Bottom Time (TBT) (min):\t\t" + this.getCurrTotalBottomTime() + "\n";						 
+	public void printAllDive() {
+		for (int i = 0; i < this.previousDives.size(); i++) {
+			System.out.println("*******************************************************************************\n" + 
+							   "Dive #:\t\t\t\t\t\t\t\t\t" + (i+1) + "\n" +							   
+							   "Previous Dive's PressureGroup From (TBT):\t\t\t\t" + this.previousDives.get(i).getPreviousPressureGroupFromTBT() + "\n" +
+							   "Surface Interval (hr):\t\t\t\t\t\t\t" + this.previousDives.get(i).getsurfaceInterval() + "\n" +
+							   "New Pressure Group After Previous Dive:\t\t\t\t\t" + this.previousDives.get(i).getNewPressureGroupAfterLastDive() + "\n" +
+							   "Next Dive Depth (ft):\t\t\t\t\t\t\t" + this.previousDives.get(i).getDepth() + "\n\n" +
+							   "Require Decompression Stop:\t\t\t\t\t\t" + this.previousDives.get(i).getDecompressionStop() + "\n" +
+							   "Adjusted No Decompression Limit (ANDL) (min) (ABT MUST NOT EXCEED):\t" + this.previousDives.get(i).getAdjustedNoDecompressionLimitTime() + "\n\n" +
+							   "Residual Nitrogen Time (RNT) (min):\t\t\t\t\t" + this.previousDives.get(i).getResidualNitrogenTime() + "\n" + 
+							   "Actual Bottom Time (ABT) (min):\t\t\t\t\t\t" + this.previousDives.get(i).getActualBottomTime() + "\n" + 
+							   "Total Bottom Time (TBT) (min):\t\t\t\t\t\t" + this.previousDives.get(i).getTotalBottomTime() + "\n\n" +
+							   "New Dive's Pressure Group from (TBT):\t\t\t\t\t" + this.previousDives.get(i).getNewPressureGroupFromTBT());
+		}
 	}
 	
 	/**
@@ -143,7 +148,7 @@ public class DivePlanner {
 	 * @param searchTimeAtDepth
 	 * @return
 	 */
-	private int adjustBottomTime(int desiredDepth, int searchTimeAtDepth) {
+	private int adjustActualBottomTime(int desiredDepth, int searchTimeAtDepth) {
 		LinkedHashMap<Integer, int[]> validDepthTimes = this.diveTable.getDepthTimes();
 		int[] validTimesAtDepth = validDepthTimes.get(desiredDepth);
 		int time_index = DivePlannerUtility.binarySearch(validTimesAtDepth, searchTimeAtDepth);		
@@ -168,7 +173,7 @@ public class DivePlanner {
 	 */
 	private double adjustSurfaceInterval(char pressureGroup, double surfaceInterval) {
 		LinkedHashMap<Character, double[]> validSurfaceIntervalTimes = this.diveTable.getSurfaceIntervalTimes();
-		double[] pressureGroupSurfaceIntervalTimes = validSurfaceIntervalTimes.get(pressureGroup);		
+		double[] pressureGroupSurfaceIntervalTimes = validSurfaceIntervalTimes.get(pressureGroup);			
 		return pressureGroupSurfaceIntervalTimes[DivePlannerUtility.binarySearch(pressureGroupSurfaceIntervalTimes, surfaceInterval)];
 	}
 		
@@ -180,7 +185,7 @@ public class DivePlanner {
 	 */
 	private char calcPressureGroup_SI(char pressureGroup, double surfaceInterval) {
 		LinkedHashMap<Character, double[]> validSurfaceIntervalTimes = this.diveTable.getSurfaceIntervalTimes();	
-		return this.diveTable.getPressureGroup(DivePlannerUtility.binarySearch(validSurfaceIntervalTimes.get(pressureGroup), surfaceIntervalInput));
+		return this.diveTable.getPressureGroup(DivePlannerUtility.binarySearch(validSurfaceIntervalTimes.get(pressureGroup), surfaceInterval));
 	}
 	
 	/**
@@ -195,16 +200,18 @@ public class DivePlanner {
 		return residualNitrogenTimeAtDepth[this.diveTable.getIndexOfPressureGroup(pressureGroup_SI)];	
 	}
 	
+	
 	/**
-	 * calculate the actual bottom time (ABT) after the surface interval
+	 * calculate the adjusted no decompression limit (ANDL) time
+	 * this limit should not exceed actual bottom time (ABT)
 	 * @param depthOfNextDive
 	 * @param pressureGroup_SI
 	 * @return
 	 */
-	private int calcActualBottomTime(int depthOfNextDive, char pressureGroup_SI) {
-		LinkedHashMap<Integer, int[]> validActualBottomTimes = this.diveTable.getActualBottomTimes();
-		int[] actualBottomTimeAtDepth = validActualBottomTimes.get(this.adjustDepth(depthOfNextDive));;
-		return actualBottomTimeAtDepth[this.diveTable.getIndexOfPressureGroup(pressureGroup_SI)];
+	private int calcAdjustedNoDecompressionLimitTime(int depthOfNextDive, char pressureGroup_SI) {
+		LinkedHashMap<Integer, int[]> getAdjustedNoDecompressionLimitTimes = this.diveTable.getAdjustedNoDecompressionLimitTimes();
+		int[] adjustedNoDecompressionLimitTimesAtDepth = getAdjustedNoDecompressionLimitTimes.get(this.adjustDepth(depthOfNextDive));;
+		return adjustedNoDecompressionLimitTimesAtDepth[this.diveTable.getIndexOfPressureGroup(pressureGroup_SI)];
 	}
 	
 	/**
@@ -223,23 +230,23 @@ public class DivePlanner {
 	 * @return
 	 */
 	public int getCurrDepth() {
-		return this.currDepth;
+		return this.currDiveDepth;
 	}
 	
 	/**
-	 * get the current bottom time of the dive
+	 * get the current actual bottom time of the dive
 	 * @return
 	 */
-	public int getCurrBottomTime() {
-		return this.currBottomTime;
+	public int getCurrActualBottomTime() {
+		return this.currActualBottomTime;
 	}
 	
 	/**
 	 * get the current pressure group associated with the depth and bottom time
 	 * @return
 	 */
-	public char getCurrPressureGroup() {
-		return this.currPressureGroup;
+	public char getCurrPressureGroupAtDepth() {
+		return this.currPressureGroupAtDepth;
 	}
 	
 	
@@ -260,23 +267,7 @@ public class DivePlanner {
 	public double getCurrSurfaceInterval() {
 		return this.currSurfaceInterval;
 	}
-	
-	/**
-	 * get the current pressure group after the surface interval
-	 * @return
-	 */
-	public char getCurrPressureGroup_SI() {
-		return this.currPressureGroup_SI;
-	}
-	
-	/**
-	 * return the current depth of the next dive after the surface interval
-	 * @return
-	 */
-	public int getCurrNextDiveDepth() {
-		return this.currNextDiveDepth;
-	}
-	
+				
 	/**
 	 * get the current residual nitrogen time (RNT)
 	 * @return
@@ -286,10 +277,18 @@ public class DivePlanner {
 	}
 	
 	/**
-	 * get the current actual bottom time (ABT)
+	 * get the adjusted no decompression limit (ANDL) times 
 	 * @return
 	 */
-	public int getCurrActualBottomTime() {
+	public int getAdjustedNoDecompressionLimitTimes() {
+		// NOT YET IMPLEMENTED
+		
+		
+		
+		
+		
+		
+		
 		return this.currActualBottomTime;
 	}
 	
@@ -299,49 +298,37 @@ public class DivePlanner {
 	 */
 	public int getCurrTotalBottomTime() {
 		return this.currTotalBottomTime;
-	}
-	
-	/**
-	 * get the depth that was inputed by the user
-	 * @return
-	 */
-	public int getDepthInput() {
-		return this.depthInput;
-	}
-	
-	/**
-	 * get the bottom time inputed by the user
-	 * @return
-	 */
-	public int getBottomTimeInput() {
-		return this.bottomTimeInput;
-	}
-	 	
-	/**
-	 * get the surface interval inputed by the user
-	 * @return
-	 */
-	public double getSurfaceIntervalInput() {
-		return this.surfaceIntervalInput;
-	}
-	
-	/**
-	 * get the next dive depth input by the user
-	 * @return
-	 */
-	public int getNextDiveDepthInput() {
-		return this.nextDiveDepthInput;
-	}
+	}	
 	
 	// DIVER ONLY (ONLY USE FOR MINOR TESTING. J-UNIT TESTING IS REQUIRED)
 	public static void main(String[] args) {
-		int depth = 59;
-		int bottomTime = 30;
+		int depth = 60;
+		int bottomTime = 39;				// ABT
 		double surfaceInterval = 1.00;		// will change to a float if needed
-		int nextDiveDepth = 48;
-		DivePlanner dt = new DivePlanner(depth, bottomTime, surfaceInterval, nextDiveDepth);
+		
+		// WARNING: DIVES CURRENTLY DOES NOT HAVE A ANY ERROR CHECKS
+		// dive 1
+		DivePlanner dt = new DivePlanner(depth, bottomTime, surfaceInterval);
+		
+		// dive 2
+		depth = 40;	
+		bottomTime = 30;					// ABT
+		surfaceInterval = 1.00;		
+		dt.addDive(depth, bottomTime, surfaceInterval);		
+	
+		// dive 3
+		depth = 50;		
+		bottomTime = 30;					// ABT
+		surfaceInterval = 1.00;		
+		dt.addDive(depth, bottomTime, surfaceInterval);	
+		
+		// dive 4
+		depth = 49;		
+		bottomTime = 50;					// ABT
+		surfaceInterval = 2.00;		
+		dt.addDive(depth, bottomTime, surfaceInterval);	
+		
 		System.out.println("<<DIVEPLANNER: DEBUG>>");
-		System.out.println(dt.getResults());
-		System.out.println("SLIGHT CHANGE TEST");
+		dt.printAllDive();
 	}
 }

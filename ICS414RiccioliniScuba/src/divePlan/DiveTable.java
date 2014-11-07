@@ -12,7 +12,7 @@ public class DiveTable {
 	private LinkedHashMap<Integer, int[]> depthTimes;
 	private LinkedHashMap<Character, double[]> surfaceIntervalTimes;
 	private LinkedHashMap<Integer, int[]> residualNitrogenTimes;
-	private LinkedHashMap<Integer, int[]> actualBottomTimes;
+	private LinkedHashMap<Integer, int[]> adjustedNoDecompressionLimitTimes;
 	private int[] validDepths;
 	private char[] pressureGroups;
 
@@ -66,32 +66,32 @@ public class DiveTable {
 		this.residualNitrogenTimes.put(this.validDepths[9], MINUTES_D120);
 		this.residualNitrogenTimes.put(this.validDepths[10], MINUTES_D130);							// there is no depth 140 for residual nitrogen
 		
-		// actual bottom times for each depth
-		final int[] ABT_D35 	= {195, 186, 180, 176, 173, 169, 165, 161, 157, 153, 148, 143, 138, 132, 126, 120, 113, 105, 97, 88, 78, 66, 53, 37, 17};
-		final int[] ABT_D40 	= {131, 124, 118, 115, 113, 109, 106, 103, 100, 96, 92, 89, 85, 80, 76, 71, 66, 61, 55, 49, 43, 36, 29, 20, 11};
-		final int[] ABT_D50 	= {73, 67, 63, 61, 59, 56, 54, 52, 49, 47, 44, 42, 39, 36, 33, 30, 27, 23, 20, 17, 13, 9, 5};
-		final int[] ABT_D60 	= {49, 44, 41, 39, 38, 36, 34, 32, 30, 28, 26, 24, 22, 20, 18, 16, 13, 11, 8, 6, 3, 1};
-		final int[] ABT_D70 	= {35, 31, 28, 27, 25, 24, 22, 21, 19, 18, 16, 14, 13, 11, 9, 7, 6, 4, 2};
-		final int[] ABT_D80 	= {26, 22, 20, 19, 17, 16, 15, 13, 12, 11, 9, 8, 7, 5, 4, 2};
-		final int[] ABT_D90 	= {21, 18, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 4, 3, 2};
-		final int[] ABT_D100 	= {17, 14, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2};
-		final int[] ABT_D110	= {13, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2};						// the 2 twos are correct
-		final int[] ABT_D120	= {10, 8, 7, 6, 5, 4, 3, 2};
-		final int[] ABT_D130	= {7, 5, 4, 3};												// there is no depth 140 for actual bottom times
+		// adjusted no decompression limits times for each depth
+		final int[] ANDL_D35 	= {195, 186, 180, 176, 173, 169, 165, 161, 157, 153, 148, 143, 138, 132, 126, 120, 113, 105, 97, 88, 78, 66, 53, 37, 17};
+		final int[] ANDL_D40 	= {131, 124, 118, 115, 113, 109, 106, 103, 100, 96, 92, 89, 85, 80, 76, 71, 66, 61, 55, 49, 43, 36, 29, 20, 11};
+		final int[] ANDL_D50 	= {73, 67, 63, 61, 59, 56, 54, 52, 49, 47, 44, 42, 39, 36, 33, 30, 27, 23, 20, 17, 13, 9, 5};
+		final int[] ANDL_D60 	= {49, 44, 41, 39, 38, 36, 34, 32, 30, 28, 26, 24, 22, 20, 18, 16, 13, 11, 8, 6, 3, 1};
+		final int[] ANDL_D70 	= {35, 31, 28, 27, 25, 24, 22, 21, 19, 18, 16, 14, 13, 11, 9, 7, 6, 4, 2};
+		final int[] ANDL_D80 	= {26, 22, 20, 19, 17, 16, 15, 13, 12, 11, 9, 8, 7, 5, 4, 2};
+		final int[] ANDL_D90 	= {21, 18, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 4, 3, 2};
+		final int[] ANDL_D100 	= {17, 14, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2};
+		final int[] ANDL_D110	= {13, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2};						// the 2 twos are correct
+		final int[] ANDL_D120	= {10, 8, 7, 6, 5, 4, 3, 2};
+		final int[] ANDL_D130	= {7, 5, 4, 3};												// there is no depth 140 for actual bottom times
 		
-		// actual bottom time table
-		this.actualBottomTimes = new LinkedHashMap<Integer, int[]>();
-		this.actualBottomTimes.put(this.validDepths[0],	ABT_D35);
-		this.actualBottomTimes.put(this.validDepths[1], ABT_D40);
-		this.actualBottomTimes.put(this.validDepths[2], ABT_D50);
-		this.actualBottomTimes.put(this.validDepths[3], ABT_D60);
-		this.actualBottomTimes.put(this.validDepths[4], ABT_D70);
-		this.actualBottomTimes.put(this.validDepths[5], ABT_D80);
-		this.actualBottomTimes.put(this.validDepths[6], ABT_D90);
-		this.actualBottomTimes.put(this.validDepths[7], ABT_D100);
-		this.actualBottomTimes.put(this.validDepths[8], ABT_D110);
-		this.actualBottomTimes.put(this.validDepths[9], ABT_D120);
-		this.actualBottomTimes.put(this.validDepths[10],ABT_D130);							// there is no depth 140 for actual bottom time
+		// adjusted no decompression limits time table
+		this.adjustedNoDecompressionLimitTimes = new LinkedHashMap<Integer, int[]>();
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[0],	ANDL_D35);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[1], ANDL_D40);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[2], ANDL_D50);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[3], ANDL_D60);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[4], ANDL_D70);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[5], ANDL_D80);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[6], ANDL_D90);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[7], ANDL_D100);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[8], ANDL_D110);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[9], ANDL_D120);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[10],ANDL_D130);							// there is no depth 140 for actual bottom time
 
 		// surface interval table	
 		// the list of surface intervals goes backwards from highest times to lowest times
@@ -110,7 +110,7 @@ public class DiveTable {
 		final double[] MINUTES_SM 	= {5.15, 2.14, 1.25, 1.04, 0.55, 0.46, 0.39, 0.32, 0.25, 0.19, 0.14, 0.09, 0.04};
 		final double[] MINUTES_SN 	= {5.19, 2.18, 1.30, 1.08, 0.59, 0.51, 0.43, 0.36, 0.30, 0.24, 0.18, 0.13, 0.08, 0.03};
 		final double[] MINUTES_SO 	= {5.24, 2.23, 1.34, 1.12, 1.03, 0.55, 0.47, 0.41, 0.34, 0.28, 0.23, 0.17, 0.12, 0.08, 0.03};
-		final double[] MINUTES_SP 	= {5.28, 2.27, 1,38, 1.16, 1.07, 0.59, 0.51, 0.45, 0.38, 0.32, 0.27, 0.21, 0.16, 0.12, 0.07, 0.03};
+		final double[] MINUTES_SP 	= {5.28, 2.27, 1.38, 1.16, 1.07, 0.59, 0.51, 0.45, 0.38, 0.32, 0.27, 0.21, 0.16, 0.12, 0.07, 0.03};
 		final double[] MINUTES_SQ 	= {5.31, 2.30, 1.42, 1.20, 1.11, 1.03, 0.55, 0.48, 0.42, 0.36, 0.30, 0.25, 0.20, 0.16, 0.11, 0.07, 0.03};
 		final double[] MINUTES_SR 	= {5.35, 2.34, 1.46, 1.24, 1.15, 1.07, 0.59, 0.52, 0.46, 0.40, 0.34, 0.29, 0.24, 0.19, 0.15, 0.11, 0.07, 0.03};
 		final double[] MINUTES_SS 	= {5.39, 2.38, 1.49, 1.27, 1.18, 1.10, 1.03, 0.56, 0.49, 0.43, 0.38, 0.32, 0.27, 0.23, 0.18, 0.14, 0.10, 0.06, 0.03};
@@ -177,11 +177,11 @@ public class DiveTable {
 	}
 	
 	/**
-	 * get a hashmap of actual bottom times
+	 * get a hashmap of adjusted no decompression limit (ANDL) times
 	 * @return
 	 */
-	public LinkedHashMap<Integer, int[]> getActualBottomTimes() {
-		return this.actualBottomTimes;
+	public LinkedHashMap<Integer, int[]> getAdjustedNoDecompressionLimitTimes() {
+		return this.adjustedNoDecompressionLimitTimes;
 	}
 	
 	/**
