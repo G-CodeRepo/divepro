@@ -12,24 +12,23 @@ public class Dive {
 	private char newPressureGroupFromTBT;
 	private char newPressureGroupAfterLastDive;
 	private double surfaceInterval;
-	private int getAdjustedNoDecompressionLimitTime;
+	private int adjustedNoDecompressionLimitTime;
 	private int residualNitrogenTime;
 	private int actualBottomTime;
 	private int totalBottomTime;
 	private boolean decompressionStop;
 	
-	public Dive(int depth, 											
-				char previousPressureGroupTBT, 				char newPressureGroupAfterLastDive ,	boolean decompressionStop,  				
-				double surfaceInterval, 					char newPressureGroupFromTBT,			 
-			    int getAdjustedNoDecompressionLimitTime,	int residualNitrogen,   				int actualBottomTime, 	
-			    int totalBottomTime) {		
+	public Dive(int depth, 								char previousPressureGroupTBT, 		char newPressureGroupAfterLastDive ,	
+				boolean decompressionStop,  			double surfaceInterval, 			char newPressureGroupFromTBT,			
+				int adjustedNoDecompressionLimitTime,	int residualNitrogen,   			int actualBottomTime, 					
+				int totalBottomTime) {		
 		this.depth = depth;
 		this.previousPressureGroupFromTBT = previousPressureGroupTBT;
 		this.newPressureGroupFromTBT = newPressureGroupFromTBT;
 		this.newPressureGroupAfterLastDive = newPressureGroupAfterLastDive;
 		this.decompressionStop = decompressionStop;
 		this.surfaceInterval = surfaceInterval;
-		this.getAdjustedNoDecompressionLimitTime = getAdjustedNoDecompressionLimitTime;
+		this.adjustedNoDecompressionLimitTime = adjustedNoDecompressionLimitTime;
 		this.residualNitrogenTime = residualNitrogen;
 		this.actualBottomTime = actualBottomTime;
 		this.totalBottomTime = totalBottomTime;
@@ -50,9 +49,7 @@ public class Dive {
 	public char getPressureGroup() {
 		return this.currPressureGroup;
 	}
-	
-
-	
+		
 	/**
 	 * get the next pressure group based on the TBT
 	 * @return
@@ -88,7 +85,7 @@ public class Dive {
 	 * @return
 	 */
 	public int getAdjustedNoDecompressionLimitTime(){
-		return this.getAdjustedNoDecompressionLimitTime;	
+		return this.adjustedNoDecompressionLimitTime;	
 	}
 	
 	/**
