@@ -371,6 +371,9 @@ public class DivePlanner {
 		
 		
 		
+		// Test
+		System.out.println("test print");
+		
 		
 		
 	}
