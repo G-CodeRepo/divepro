@@ -6,10 +6,7 @@ import java.util.LinkedHashMap;
  * DiveProfileUtility class is used for assorted searching and conversion algorithms
  * @author Gerald Abut
  */
-public class DivePlannerUtility {
-	
-	// TEMP BINARY SEARCHES (WILL IMPLEMENT GENERICS SOON)
-	
+public class DivePlannerUtility {	
 	/**
 	 * do a binary search on the given list of type int
 	 * @param timeList
@@ -45,7 +42,7 @@ public class DivePlannerUtility {
 	 * @param searchItem
 	 * @return
 	 */
-	public static int binarySearch(double[] timeList, double searchItem) {			
+	public static int binarySearchReverseDouble(double[] timeList, double searchItem) {			
 		int left = 0;
 		int right = timeList.length-1;
 		int mid = 0;
@@ -60,7 +57,37 @@ public class DivePlannerUtility {
 				return mid;
 			}
 		}
+		
+		if ((right == 0) || (right >= timeList.length-1)) {				// compensate for end of list
+			return right-1;												// item not found but but at the end of the list. this means that this is the limit it can go up to
+		} else {
+			return right;												// item not found but NOT YET at the end of the list. this means that searchItem must be rounded up
+		}
+	}
 	
+	
+	/**
+	 * this is a type int version of binarySearch (ONLY USED TO FIND THE MINIMUM SURFACE INTERVAL)
+	 * @param timeList
+	 * @param searchItem
+	 * @return
+	 */
+	public static int binarySearchReverseInt(int[] timeList, int searchItem) {			
+		int left = 0;
+		int right = timeList.length-1;
+		int mid = 0;
+		while (left <= right) {
+			mid = (left + right)/2;										// find mid of array
+			
+			if (searchItem < timeList[mid]) { 		// item is smaller than mid. move search to the right of array
+				left = mid + 1;
+			} else if (searchItem > timeList[mid]){	// item is greater than mid. move search to the left of array
+				right =  mid - 1;
+			} else {													// searchItem found
+				return mid;
+			}
+		}
+		
 		if ((right == 0) || (right >= timeList.length-1)) {				// compensate for end of list
 			return right-1;												// item not found but but at the end of the list. this means that this is the limit it can go up to
 		} else {
@@ -81,18 +108,10 @@ public class DivePlannerUtility {
 	}
 	
 	/**
-	 * convert meters to feet
+	 * convert feet to meters
 	 * @return
 	 */
-	public int unitConverter(int meter) {
-		// NOT YET IMPLEMENTED
-		
-		
-		
-		
-		
-		
-		
-		return 0;	// temp
+	public static double convertFeetToMeter(int feet) {
+		return ((double)feet * 0.3048);		// 1 ft = 0.3048 m
 	}
 }

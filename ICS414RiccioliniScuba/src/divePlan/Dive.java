@@ -6,22 +6,25 @@ package divePlan;
  */
 
 public class Dive {
+	private int diveNumber;
 	private int depth;
 	private char currPressureGroup;
 	private char previousPressureGroupFromTBT;
 	private char newPressureGroupFromTBT;
 	private char newPressureGroupAfterLastDive;
 	private double surfaceInterval;
+	private double minSurfaceInterval;
 	private int adjustedNoDecompressionLimitTime;
 	private int residualNitrogenTime;
 	private int actualBottomTime;
 	private int totalBottomTime;
 	private boolean decompressionStop;
 	
-	public Dive(int depth, 								char previousPressureGroupTBT, 		char newPressureGroupAfterLastDive ,	
-				boolean decompressionStop,  			double surfaceInterval, 			char newPressureGroupFromTBT,			
-				int adjustedNoDecompressionLimitTime,	int residualNitrogen,   			int actualBottomTime, 					
-				int totalBottomTime) {		
+	public Dive(int diveNumber, 						int depth, 								char previousPressureGroupTBT, 		
+				char newPressureGroupAfterLastDive ,	boolean decompressionStop,  			double surfaceInterval, 			
+				double minSurfaceInterval,				char newPressureGroupFromTBT,			int adjustedNoDecompressionLimitTime, 
+				int residualNitrogen,   				int actualBottomTime, 					int totalBottomTime) {	
+		this.diveNumber = diveNumber;
 		this.depth = depth;
 		this.previousPressureGroupFromTBT = previousPressureGroupTBT;
 		this.newPressureGroupFromTBT = newPressureGroupFromTBT;
@@ -29,9 +32,18 @@ public class Dive {
 		this.decompressionStop = decompressionStop;
 		this.surfaceInterval = surfaceInterval;
 		this.adjustedNoDecompressionLimitTime = adjustedNoDecompressionLimitTime;
+		this.minSurfaceInterval = minSurfaceInterval;
 		this.residualNitrogenTime = residualNitrogen;
 		this.actualBottomTime = actualBottomTime;
 		this.totalBottomTime = totalBottomTime;
+	}
+	
+	/**
+	 * get the dive number
+	 * @return
+	 */
+	public int getDiveNumber() {
+		return this.diveNumber;
 	}
 	
 	/**
@@ -78,10 +90,9 @@ public class Dive {
 		return this.decompressionStop;
 	}
 	
-
-	
 	/**
 	 * get the adjusted no decompression limit (ANDL) time
+	 * AKA: maximum allowable depth after a dive
 	 * @return
 	 */
 	public int getAdjustedNoDecompressionLimitTime(){
@@ -92,8 +103,16 @@ public class Dive {
 	 * get the surface interval after the dive
 	 * @return
 	 */
-	public double getsurfaceInterval() {
+	public double getSurfaceInterval() {
 		return this.surfaceInterval;
+	}
+	
+	/**
+	 * get the minimum surface interval time
+	 * @return
+	 */
+	public double getMinSurfaceInterval() {
+		return this.minSurfaceInterval;
 	}
 		
 	/**
