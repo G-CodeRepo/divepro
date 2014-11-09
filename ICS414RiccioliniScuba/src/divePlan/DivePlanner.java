@@ -366,13 +366,11 @@ public class DivePlanner {
 		System.out.println("<<DIVEPLANNER: DEBUG>>");
 		dt.printAllDive();
 		
-		// CALL saveDivePlan HERE...
+		// CALL saveDivePlan HERE...	
 		
 		
 		
 		
-		// Test
-		System.out.println("test print");
 		
 		
 		
