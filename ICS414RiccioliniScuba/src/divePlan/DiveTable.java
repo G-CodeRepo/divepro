@@ -9,19 +9,19 @@ import java.util.LinkedHashMap;
 
 
 public class DiveTable {
-	private LinkedHashMap<Integer, int[]> depthTimes;
-	private LinkedHashMap<Character, double[]> surfaceIntervalTimes;
-	private LinkedHashMap<Integer, int[]> residualNitrogenTimes;
-	private LinkedHashMap<Integer, int[]> adjustedNoDecompressionLimitTimes;
-	private int[] validDepths;
-	private char[] pressureGroups;
+	private LinkedHashMap<Integer, int[]> 		bottomTimes;
+	private LinkedHashMap<Character, double[]> 	surfaceIntervalTimes;
+	private LinkedHashMap<Integer, int[]> 		residualNitrogenTimes;
+	private LinkedHashMap<Integer, int[]> 		adjustedNoDecompressionLimitTimes;
+	private int[] 								validDepths;
+	private char[] 								pressureGroups;
 
 	public DiveTable() {
 		// valid depths
-		final int[] DEPTHS = {35, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140};
-		final char[] ALPHA = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H','I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X', 'Y', 'Z'};
-		this.validDepths = DEPTHS;
-		this.pressureGroups = ALPHA;
+		final int[] 	DEPTHS 	= {35, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140};
+		final char[] 	ALPHA 	= {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H','I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X', 'Y', 'Z'};
+		this.validDepths 		= DEPTHS;
+		this.pressureGroups 	= ALPHA;
 		
 		// times for each depth (ALSO USED FOR RESIDUAL NITROGEN TIMES (RNT) UP TO 130 FT ONLY, NO 140 FT)
 		final int[] MINUTES_D35 	= {10, 19, 25, 29, 32, 36, 40, 44, 48, 52, 57, 62, 67, 73, 79, 85, 92, 100, 108, 117, 127, 139, 152, 168, 188, 205};
@@ -37,20 +37,20 @@ public class DiveTable {
 		final int[] MINUTES_D130	= {3, 5, 6, 7, 8, 8, 9, 10};								// the second  8 represents the "arrow" value on the dive table
 		final int[] MINUTES_D140	= {4, 4, 5, 6, 7, 8};										// the first   4 represents the "arrow" value on the dive table
 																								// THESE ARE JUST TEMP FOR THE => SYMBOL (OR NOT)
-		// depth table 
-		this.depthTimes = new LinkedHashMap<Integer, int[]>();
-		this.depthTimes.put(this.validDepths[0], MINUTES_D35);	
-		this.depthTimes.put(this.validDepths[1], MINUTES_D40);
-		this.depthTimes.put(this.validDepths[2], MINUTES_D50);
-		this.depthTimes.put(this.validDepths[3], MINUTES_D60);
-		this.depthTimes.put(this.validDepths[4], MINUTES_D70);
-		this.depthTimes.put(this.validDepths[5], MINUTES_D80);
-		this.depthTimes.put(this.validDepths[6], MINUTES_D90);
-		this.depthTimes.put(this.validDepths[7], MINUTES_D100);
-		this.depthTimes.put(this.validDepths[8], MINUTES_D110);
-		this.depthTimes.put(this.validDepths[9], MINUTES_D120);
-		this.depthTimes.put(this.validDepths[10], MINUTES_D130);
-		this.depthTimes.put(this.validDepths[11], MINUTES_D140);
+		// bottom time table 
+		this.bottomTimes = new LinkedHashMap<Integer, int[]>();
+		this.bottomTimes.put(this.validDepths[0], MINUTES_D35);	
+		this.bottomTimes.put(this.validDepths[1], MINUTES_D40);
+		this.bottomTimes.put(this.validDepths[2], MINUTES_D50);
+		this.bottomTimes.put(this.validDepths[3], MINUTES_D60);
+		this.bottomTimes.put(this.validDepths[4], MINUTES_D70);
+		this.bottomTimes.put(this.validDepths[5], MINUTES_D80);
+		this.bottomTimes.put(this.validDepths[6], MINUTES_D90);
+		this.bottomTimes.put(this.validDepths[7], MINUTES_D100);
+		this.bottomTimes.put(this.validDepths[8], MINUTES_D110);
+		this.bottomTimes.put(this.validDepths[9], MINUTES_D120);
+		this.bottomTimes.put(this.validDepths[10], MINUTES_D130);
+		this.bottomTimes.put(this.validDepths[11], MINUTES_D140);
 		
 		// residual nitrogen table
 		this.residualNitrogenTimes = new LinkedHashMap<Integer, int[]>();
@@ -122,7 +122,7 @@ public class DiveTable {
 		final double[] MINUTES_SY 	= {5.57, 2.56, 2.08, 1.46, 1.37, 1.29, 1.21, 1.14, 1.08, 1.02, 0.56, 0.51, 0.46, 0.41, 0.37, 0.33, 0.29, 0.25, 0.21, 0.18, 0.14, 0.11, 0.08, 0.05, 0.02};
 		final double[] MINUTES_SZ 	= {6.00, 2.59, 2.11, 1.49, 1.40, 1.31, 1.24, 1.17, 1.11, 1.05, 0.59, 0.54, 0.49, 0.44, 0.40, 0.35, 0.31, 0.28, 0.24, 0.20, 0.17, 0.14, 0.11, 0.08, 0.05, 0.02};
 
-		
+		// surface interval times at pressure group
 		this.surfaceIntervalTimes = new LinkedHashMap<Character, double[]>();
 		this.surfaceIntervalTimes.put('A', MINUTES_SA);
 		this.surfaceIntervalTimes.put('B', MINUTES_SB);
@@ -153,18 +153,18 @@ public class DiveTable {
 	}
 	
 	/**
-	 * get the hashmap of depth times
+	 * get the hashmap of bottom times
 	 * @return
 	 */
-	public LinkedHashMap<Integer, int[]> getDepthTimes() {
-		return this.depthTimes;
+	public LinkedHashMap<Integer, int[]> getValidBottomTimes() {
+		return this.bottomTimes;
 	}
 	
 	/**
 	 * get the hashmap of surface interval times
 	 * @return
 	 */
-	public LinkedHashMap<Character, double[]> getSurfaceIntervalTimes() {
+	public LinkedHashMap<Character, double[]> getValidSurfaceIntervalTimes() {
 		return this.surfaceIntervalTimes;
 	}
 	
@@ -172,7 +172,7 @@ public class DiveTable {
 	 * get the hashmap of residual nitrogen
 	 * @return
 	 */
-	public LinkedHashMap<Integer, int[]> getResidualNitrogenTimes() {
+	public LinkedHashMap<Integer, int[]> getValidResidualNitrogenTimes() {
 		return this.residualNitrogenTimes;
 	}
 	
@@ -180,7 +180,7 @@ public class DiveTable {
 	 * get a hashmap of adjusted no decompression limit (ANDL) times
 	 * @return
 	 */
-	public LinkedHashMap<Integer, int[]> getAdjustedNoDecompressionLimitTimes() {
+	public LinkedHashMap<Integer, int[]> getValidAdjustedNoDecompressionLimitTimes() {
 		return this.adjustedNoDecompressionLimitTimes;
 	}
 	
@@ -196,12 +196,14 @@ public class DiveTable {
 	 * determine pressure group from the given index of the time
 	 * @param arrayIndex
 	 * @return
+	 * @throws IllegalArgumentException
 	 */
-	public char getPressureGroup (int arrayIndex) {
-
-		// TEMP ERROR CHECK. CALLING METHOD NEEDS TO CATCH ERROR
+	public char getValidPressureGroup (int arrayIndex) {
 		if ((arrayIndex < 0) || arrayIndex > this.pressureGroups.length-1) {	
-			throw new IllegalArgumentException("ERROR: Array index needs to be between 0 and " + (this.pressureGroups.length-1));	
+			throw new IllegalArgumentException("ERROR: Depth Exceeded The Maximum Allowable Bottom Time.\n" +
+											   "Error Location:\t\t\t" + "DiveTable -> getPressureGroup()\n" + 
+											   "Given Index Of Pressure Group:\t" + arrayIndex + "\n" +
+											   "Valid Index:\t\t\t" + "Between 0 And " + (this.pressureGroups.length-1) + "\n");	
 		} else {
 			return this.pressureGroups[arrayIndex];	// return 
 		}
@@ -216,42 +218,45 @@ public class DiveTable {
 	}
 	
 	/**
-	 * 
+	 * get the index of the given pressure group
 	 * @param pressureGroup
 	 * @return
+	 * @throws IllegalArgumentException
 	 */
 	public int getIndexOfPressureGroup(char pressureGroup) {
-		int index = 0;
+		int 		index 	= 0;
 		switch (pressureGroup) { // note array index starts at zero
-		case 'A':	index = 0;		break;
-		case 'B': 	index = 1;		break;
-		case 'C':	index = 2;		break;
-		case 'D':	index = 3;		break;
-		case 'E':	index = 4;		break;
-		case 'F':	index = 5;		break;
-		case 'G':	index = 6;		break;
-		case 'H':	index = 7;		break;
-		case 'I':	index = 8;		break;
-		case 'J':	index = 9;		break;
-		case 'K':	index = 10;		break;
-		case 'L':	index = 11;		break;
-		case 'M':	index = 12;		break;
-		case 'N':	index = 13;		break;
-		case 'O':	index = 14;		break;
-		case 'P':	index = 15;		break;
-		case 'Q':	index = 16;		break;
-		case 'R':	index = 17;		break;
-		case 'S':	index = 18;		break;
-		case 'T':	index = 19;		break;
-		case 'U':	index = 20;		break;
-		case 'V':	index = 21;		break;
-		case 'W':	index = 22;		break;
-		case 'X':	index = 23;		break;
-		case 'Y':	index = 24;		break;
-		case 'Z':	index = 26;		break;
+		case 'A':	index 	= 0;		break;
+		case 'B': 	index 	= 1;		break;
+		case 'C':	index 	= 2;		break;
+		case 'D':	index 	= 3;		break;
+		case 'E':	index 	= 4;		break;
+		case 'F':	index 	= 5;		break;
+		case 'G':	index 	= 6;		break;
+		case 'H':	index 	= 7;		break;
+		case 'I':	index 	= 8;		break;
+		case 'J':	index 	= 9;		break;
+		case 'K':	index 	= 10;		break;
+		case 'L':	index 	= 11;		break;
+		case 'M':	index 	= 12;		break;
+		case 'N':	index 	= 13;		break;
+		case 'O':	index 	= 14;		break;
+		case 'P':	index 	= 15;		break;
+		case 'Q':	index 	= 16;		break;
+		case 'R':	index 	= 17;		break;
+		case 'S':	index 	= 18;		break;
+		case 'T':	index 	= 19;		break;
+		case 'U':	index 	= 20;		break;
+		case 'V':	index 	= 21;		break;
+		case 'W':	index 	= 22;		break;
+		case 'X':	index 	= 23;		break;
+		case 'Y':	index 	= 24;		break;
+		case 'Z':	index 	= 25;		break;
 		default:	
-				System.err.println("ERROR: Should no be here.");		// temp error
-				break;
+			throw new IllegalArgumentException("ERROR: Pressure Group Does Not Exist.\n" +
+											   "Error Location:\t" + "DiveTable -> getIndexOfPressureGroup()\n" +
+											   "Given Pressure Group:\t" + pressureGroup + "\n" +
+											   "Valid Pressure Groups:\t" + "Capital A-Z\n");
 		}
 		return index;
 	}

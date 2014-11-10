@@ -23,7 +23,8 @@ public class DiveProfileManager {
 	}
 	
 	public void saveDive (Calendar date, LinkedList<Dive> dive) {
-
+		// CALENDAR IS ACTUAL AN ABSTRACT CLASS AND YOU WILL HAVE TO CREATE THE METHODS
+		// BUT YOU CAN CHANGE IT TO WHATEVER SUITES YOU (e.g. String, etc.)
 		
 		
 		

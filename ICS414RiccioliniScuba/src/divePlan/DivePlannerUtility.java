@@ -14,16 +14,16 @@ public class DivePlannerUtility {
 	 * @return
 	 */
 	public static int binarySearch(int[] timeList, int searchItem) {		
-		int left = 0;
-		int right = timeList.length-1;
-		int mid = 0;
+		int left 	= 0;
+		int right 	= timeList.length-1;
+		int mid 	= 0;
 		while (left <= right) {
 			mid = (left + right)/2;					// find mid of array
 			
 			if (searchItem > timeList[mid]) { 		// item is larger than mid. move search to the right of array
-				left = mid + 1;
+				left 	= mid + 1;
 			} else if (searchItem < timeList[mid]){	// item is less than mid. move search to the left of array
-				right =  mid - 1;
+				right 	= mid - 1;
 			} else {								// searchItem found
 				return mid;
 			}
@@ -43,16 +43,16 @@ public class DivePlannerUtility {
 	 * @return
 	 */
 	public static int binarySearchReverseDouble(double[] timeList, double searchItem) {			
-		int left = 0;
-		int right = timeList.length-1;
-		int mid = 0;
+		int left 	= 0;
+		int right 	= timeList.length-1;
+		int mid 	= 0;
 		while (left <= right) {
 			mid = (left + right)/2;										// find mid of array
 			
 			if (Double.compare(searchItem, timeList[mid]) < 0) { 		// item is smaller than mid. move search to the right of array
-				left = mid + 1;
+				left 	= mid + 1;
 			} else if (Double.compare(searchItem,timeList[mid]) > 0){	// item is greater than mid. move search to the left of array
-				right =  mid - 1;
+				right 	= mid - 1;
 			} else {													// searchItem found
 				return mid;
 			}
@@ -73,16 +73,16 @@ public class DivePlannerUtility {
 	 * @return
 	 */
 	public static int binarySearchReverseInt(int[] timeList, int searchItem) {			
-		int left = 0;
-		int right = timeList.length-1;
-		int mid = 0;
+		int left 	= 0;
+		int right 	= timeList.length-1;
+		int mid 	= 0;
 		while (left <= right) {
 			mid = (left + right)/2;										// find mid of array
 			
 			if (searchItem < timeList[mid]) { 		// item is smaller than mid. move search to the right of array
-				left = mid + 1;
+				left 	= mid + 1;
 			} else if (searchItem > timeList[mid]){	// item is greater than mid. move search to the left of array
-				right =  mid - 1;
+				right 	= mid - 1;
 			} else {													// searchItem found
 				return mid;
 			}
@@ -97,18 +97,19 @@ public class DivePlannerUtility {
 	
 	/**
 	 * get the time index
-	 * @param searchTimeAtDepth
 	 * @param desiredDepth
+	 * @param searchTimeAtDepth
 	 * @return
 	 */
 	public static int getTimeIndex(int desiredDepth, int searchTimeAtDepth) {
-		DiveTable diveTable = new DiveTable();
-		LinkedHashMap<Integer, int[]> validDepthTimes = diveTable.getDepthTimes();
+		DiveTable diveTable 							= new DiveTable();
+		LinkedHashMap<Integer, int[]> validDepthTimes 	= diveTable.getValidBottomTimes();
 		return DivePlannerUtility.binarySearch(validDepthTimes.get(desiredDepth), searchTimeAtDepth);
 	}
 	
 	/**
 	 * convert feet to meters
+	 * @param feet
 	 * @return
 	 */
 	public static double convertFeetToMeter(int feet) {
