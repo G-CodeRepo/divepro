@@ -49,10 +49,8 @@ public class DivePlanner {
 	 * @param surfaceInterval
 	 * @throws IllegalArgumentException
 	 */
-	private void addDive(int newDiveDepth, int bottomTime, double surfaceInterval) { 
+	public void addDive(int newDiveDepth, int bottomTime, double surfaceInterval) { 
 		
-		// TO-DO-LIST
-		// CHECK FOR MAX AND MIN SURFACE INTERVAL TIME
 		int 	diveNumber 							= 0;
 		int 	nextDiveDepth 						= 0;
 		boolean decompressionStop 					= false;
@@ -119,8 +117,6 @@ public class DivePlanner {
 											   "Given Bottom Time:\t\t\t\t" + bottomTime + "\n" +
 											   "Max Allowable Bottom Time Of Next Dive:\t\t" + adjustedNoDecompressionLimitTime + "\n");
 		}
-		
-
 		
 		Dive dive = new Dive(diveNumber, 							nextDiveDepth, 					previousPressureGroupFromTBT, 		
 							 newPressureGroupAfterPreviousDive,		decompressionStop,				surfaceIntervalAfterDive, 					
