@@ -640,12 +640,12 @@ public class DivePlanner {
 			// DO NOT PUT MESSAGE IN GUI
 			// GUI WILL USE COLORS INSTEAD
 			System.err.println(w.getMessage());
-		} /*catch (IndexOutOfBoundsException x) {
+		} catch (IndexOutOfBoundsException x) {
 			System.err.println(x.getMessage());
 		} catch (IllegalArgumentException y) {
 			System.err.println(y.getMessage());
 		} catch (NullPointerException z) {
 			System.err.println(z.getMessage());
-		}*/
+		}
 	}
 }
