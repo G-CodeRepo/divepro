@@ -610,11 +610,11 @@ public class DivePlanner {
 			dt.addDive(depth, bottomTime, surfaceInterval);	
 			
 			// dive 4
-			depth 					= 30;		
-			bottomTime 				= 50;					// ABT
+			/*depth 					= 30;		
+			bottomTime 				= 10;					// ABT
 			surfaceInterval 		= 2.00;		
 			dt.addDive(depth, bottomTime, surfaceInterval);	
-			
+			*/
 
 			System.out.println("<<DIVEPLANNER: DEBUG>>");
 			dt.printAllDives();
@@ -640,12 +640,12 @@ public class DivePlanner {
 			// DO NOT PUT MESSAGE IN GUI
 			// GUI WILL USE COLORS INSTEAD
 			System.err.println(w.getMessage());
-		} catch (IndexOutOfBoundsException x) {
+		}/*catch (IndexOutOfBoundsException x) {
 			System.err.println(x.getMessage());
 		} catch (IllegalArgumentException y) {
 			System.err.println(y.getMessage());
 		} catch (NullPointerException z) {
 			System.err.println(z.getMessage());
-		}
+		}*/
 	}
 }
