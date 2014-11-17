@@ -15,6 +15,7 @@ public class DiveTable {
 	private LinkedHashMap<Integer, int[]> 		adjustedNoDecompressionLimitTimes;
 	private int[] 								validDepths;
 	private char[] 								pressureGroups;
+	private final boolean 						errorCheck 							= true;	// WARNING: SET TO FALSE ONLY FOR DEBUGGING ONLY 
 
 	public DiveTable() {
 		// valid depths
@@ -36,7 +37,7 @@ public class DiveTable {
 		final int[] MINUTES_D120	= {3, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13};					// the second 12 represents the "arrow" value on the dive table
 		final int[] MINUTES_D130	= {3, 5, 6, 7, 8, 8, 9, 10};								// the second  8 represents the "arrow" value on the dive table
 		final int[] MINUTES_D140	= {4, 4, 5, 6, 7, 8};										// the first   4 represents the "arrow" value on the dive table
-																								// THESE ARE JUST TEMP FOR THE => SYMBOL (OR NOT)
+																								
 		// bottom time table 
 		this.bottomTimes = new LinkedHashMap<Integer, int[]>();
 		this.bottomTimes.put(this.validDepths[0], MINUTES_D35);	
@@ -75,23 +76,23 @@ public class DiveTable {
 		final int[] ANDL_D80 	= {26, 22, 20, 19, 17, 16, 15, 13, 12, 11, 9, 8, 7, 5, 4, 2};
 		final int[] ANDL_D90 	= {21, 18, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 4, 3, 2};
 		final int[] ANDL_D100 	= {17, 14, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2};
-		final int[] ANDL_D110	= {13, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2};						// the 2 twos are correct
+		final int[] ANDL_D110	= {13, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2};								// the 2 twos are correct
 		final int[] ANDL_D120	= {10, 8, 7, 6, 5, 4, 3, 2};
-		final int[] ANDL_D130	= {7, 5, 4, 3};												// there is no depth 140 for actual bottom times
+		final int[] ANDL_D130	= {7, 5, 4, 3};														// there is no depth 140 for ANDL time																				
 		
 		// adjusted no decompression limits time table
 		this.adjustedNoDecompressionLimitTimes = new LinkedHashMap<Integer, int[]>();
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[0],	ANDL_D35);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[1], ANDL_D40);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[2], ANDL_D50);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[3], ANDL_D60);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[4], ANDL_D70);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[5], ANDL_D80);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[6], ANDL_D90);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[7], ANDL_D100);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[8], ANDL_D110);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[9], ANDL_D120);
-		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[10],ANDL_D130);							// there is no depth 140 for actual bottom time
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[0],	 ANDL_D35);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[1],  ANDL_D40);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[2],  ANDL_D50);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[3],  ANDL_D60);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[4],  ANDL_D70);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[5],  ANDL_D80);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[6],  ANDL_D90);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[7],  ANDL_D100);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[8],  ANDL_D110);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[9],  ANDL_D120);
+		this.adjustedNoDecompressionLimitTimes.put(this.validDepths[10], ANDL_D130);				// there is no depth 140 for ANDL time											
 
 		// surface interval table	
 		// the list of surface intervals goes backwards from highest times to lowest times
@@ -199,14 +200,15 @@ public class DiveTable {
 	 * @throws IllegalArgumentException
 	 */
 	public char getValidPressureGroup (int arrayIndex) {
-		if ((arrayIndex < 0) || arrayIndex > this.pressureGroups.length-1) {	
-			throw new IllegalArgumentException("ERROR: Depth Exceeded The Maximum Allowable Bottom Time.\n" +
-											   "Error Location:\t\t\t" + "DiveTable -> getPressureGroup()\n" + 
-											   "Given Index Of Pressure Group:\t" + arrayIndex + "\n" +
-											   "Valid Index:\t\t\t" + "Between 0 And " + (this.pressureGroups.length-1) + "\n");	
-		} else {
-			return this.pressureGroups[arrayIndex];	// return 
+		if (this.errorCheck) { 
+			if ((arrayIndex < 0) || arrayIndex > this.pressureGroups.length-1) {	
+				throw new IllegalArgumentException("ERROR: The Maximum Allowable Bottom Time Is Exceeded For The Given Depth.\n" +
+												   "Error Location:\t\t\t" + "DiveTable -> getValidPressureGroup()\n" + 
+												   "Given Index Of Pressure Group:\t" + arrayIndex + "\n" +
+												   "Valid Index:\t\t\t" + "Between 0 And " + (this.pressureGroups.length-1) + "\n");	
+			}
 		}
+		return this.pressureGroups[arrayIndex];
 	}
 	
 	/**
@@ -253,10 +255,12 @@ public class DiveTable {
 		case 'Y':	index 	= 24;		break;
 		case 'Z':	index 	= 25;		break;
 		default:	
-			throw new IllegalArgumentException("ERROR: Pressure Group Does Not Exist.\n" +
-											   "Error Location:\t" + "DiveTable -> getIndexOfPressureGroup()\n" +
-											   "Given Pressure Group:\t" + pressureGroup + "\n" +
-											   "Valid Pressure Groups:\t" + "Capital A-Z\n");
+			if (this.errorCheck){ 
+				throw new IllegalArgumentException("ERROR: Pressure Group Does Not Exist.\n" +
+												   "Error Location:\t" + "DiveTable -> getIndexOfPressureGroup()\n" +
+												   "Given Pressure Group:\t" + pressureGroup + "\n" +
+												   "Valid Pressure Groups:\t" + "Capital A-Z\n");
+			}
 		}
 		return index;
 	}

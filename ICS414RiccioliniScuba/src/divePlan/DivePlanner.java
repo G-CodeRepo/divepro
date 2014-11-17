@@ -13,18 +13,18 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 public class DivePlanner {
-	DiveTable 			diveTable;
-	LinkedList<Dive> 	previousDives;
-	DiveProfileManager 	diveManager;	
-	 
+	private DiveTable 			diveTable;
+	private LinkedList<Dive> 	previousDives;
+	private DiveProfileManager 	diveManager;
+	private final boolean 		errorCheck = true;	// WARNING: SET TO FALSE ONLY FOR DEBUGGING ONLY
+	
 	/**
 	 * Constructor
 	 * @param diveDepth
 	 * @param bottomTime
 	 * @param timeOnSurface
-	 * @throws IllegalArgumentException
 	 */
-	public DivePlanner(int diveDepth, int bottomTime, double timeOnSurface) throws IllegalArgumentException {
+	public DivePlanner(int diveDepth, int bottomTime, double timeOnSurface) {
 		this.diveTable 		= new DiveTable();
 		this.previousDives 	= new LinkedList<Dive>();
 		this.diveManager 	= new DiveProfileManager();
@@ -71,18 +71,36 @@ public class DivePlanner {
 		adjustedActualBottomTime 				= this.adjustActualBottomTime(nextDiveDepth, bottomTime); // adjust depth to be able to search the table
 		
 		// check if next dive depth is a valid dive depth. next dive depth should be less than or equal to previous dive
-		if ((this.previousDives.size() > 0) && (newDiveDepth > this.previousDives.getLast().getDepth())) {
-			throw new IllegalArgumentException("ERROR: Given Dive Depth Exceeds The Maximum Allowed Dive Depth After A Previous Dive.\n" +
-											   "Error Location:\t\t\t\t" + "DivePlanner -> addDive()\n" +
-											   "Given Dive Depth:\t\t\t" + newDiveDepth + "\n" +
-											   "Max Allowable Depth Of Next Dive:\t" + this.previousDives.getLast().getDepth() + "\n");
+		if (this.errorCheck) {
+			if ((this.previousDives.size() > 0) && (newDiveDepth > this.previousDives.getLast().getDepth())) {
+				throw new IllegalArgumentException("ERROR: Given Dive Depth Exceeds The Maximum Allowed Dive Depth After A Previous Dive.\n" +
+												   "Error Location:\t\t\t\t" + "DivePlanner -> addDive()\n" +
+												   "Given Dive Depth:\t\t\t" + newDiveDepth + "\n" +
+												   "Max Allowable Depth Of Next Dive:\t" + this.previousDives.getLast().getDepth() + "\n" +
+												   "Dive Number:\t\t\t\t" + diveNumber + "\n");
+			}
 		}
 		
 		if (this.previousDives.size() > 0) {
 			// MULTIPLE DIVES 
 			previousPressureGroupFromTBT 		= this.previousDives.getLast().getNewPressureGroupFromTBT(); 
+			
 			surfaceIntervalAfterDive 			= this.adjustSurfaceInterval(previousPressureGroupFromTBT, surfaceInterval);
-			newPressureGroupAfterPreviousDive 	= this.calcPressureGroup(previousPressureGroupFromTBT, surfaceIntervalAfterDive);			
+			
+			
+			newPressureGroupAfterPreviousDive 	= this.calcPressureGroup(previousPressureGroupFromTBT, surfaceIntervalAfterDive);
+			
+			// there is no residual nitrogen at 140 ft
+			if (this.errorCheck) {
+				int maxDepth = this.diveTable.getValidDepths()[this.diveTable.getValidDepths().length-1];	// the maximum depth allowed
+				if (nextDiveDepth == maxDepth) {
+					throw new IllegalArgumentException("ERROR: There Is No Residual Nitrogen Time For Depth " + maxDepth + "\n" +
+							   "Error Location:\t\t\t\t" + "DivePlanner -> addDive()\n" +
+							   "Given Dive Depth:\t\t\t" + newDiveDepth + "\n" +
+							   "Max Allowable Depth Of Next Dive:\t" + this.diveTable.getValidDepths()[this.diveTable.getValidDepths().length-2] + "\n" +
+							   "Dive Number:\t\t\t\t" + diveNumber + "\n");
+				}
+			}
 			residualNitrogenTime 				= this.calcResidualNitrogenTime(nextDiveDepth, newPressureGroupAfterPreviousDive);
 			totalBottomTime 					= this.calcTotalBottomTime(residualNitrogenTime, actualBottomTime);
 			newPressureGroupFromTBT 			= this.diveTable.getValidPressureGroup(DivePlannerUtility.getTimeIndex(nextDiveDepth, totalBottomTime));
@@ -97,34 +115,54 @@ public class DivePlanner {
 		}
 		
 		decompressionStop = this.requireDecompressionStop(nextDiveDepth, adjustedActualBottomTime);
-		adjustedNoDecompressionLimitTime = this.calcAdjustedNoDecompressionLimitTime(nextDiveDepth, newPressureGroupAfterPreviousDive);
-		minSurfaceInterval = this.calcMinSurfaceIntervalTime(previousPressureGroupFromTBT, nextDiveDepth, adjustedActualBottomTime);
-		
-		// check if the surface interval is at least the minimum surface interval allowed after a dive
-		if ((this.previousDives.size() > 0) && (surfaceInterval < minSurfaceInterval)) {
-			throw new IllegalArgumentException("ERROR: Given Surface Interval Time Is Below The Minimum Surface Interval Time After A Previous Dive.\n" +
-											   "This Could Also Be Caused By An Invalid Bottom Time.\n" +
-											   "Error Location:\t\t\t\t\t\t" + "DivePlanner -> addDive()\n" +
-											   "Given Surface Interval Time:\t\t\t\t" + surfaceInterval + "\n" +
-											   "Minimum Allowable Surface Interval Of Next Dive:\t" + (float)minSurfaceInterval + "\n");
+
+		// calculate minimum surface interval and adjusted no decompression limit (compensate for single dives)
+		if (this.previousDives.isEmpty()) {				// no previous dives
+			minSurfaceInterval = 0;						// smallest possible surface interval, zero, because there was no previous dives
+			if (this.errorCheck) {
+				if (actualBottomTime > adjustedActualBottomTime) {
+					throw new IllegalArgumentException("ERROR: Given Bottom Time Exceed The Maximum Allowed Bottom Time For The Dive Depth.\n" +
+							   						   "Error Location:\t\t\t\t\t" + "DivePlanner -> addDive()\n" +
+							   						   "Given Bottom Time:\t\t\t\t" + bottomTime + "\n" +
+							   						   "Max Allowable Bottom Time Of Next Dive:\t\t" + adjustedActualBottomTime + "\n");
+				}
+			}
+			adjustedNoDecompressionLimitTime = adjustedActualBottomTime;	// same as the adjusted ABT because this is the first dive
+		} else {
+			minSurfaceInterval 					= this.calcMinSurfaceIntervalTime(previousPressureGroupFromTBT, nextDiveDepth, adjustedActualBottomTime);
+			adjustedNoDecompressionLimitTime 	= this.calcAdjustedNoDecompressionLimitTime(nextDiveDepth, newPressureGroupAfterPreviousDive);
 		}
 		
-		// check if the next bottom time exceeds the maximum allowed bottom time after a dive
-		if ((this.previousDives.size() > 0) && (bottomTime > adjustedNoDecompressionLimitTime)) {
-			throw new IllegalArgumentException("ERROR: Given Bottom Time Exceed The Maximum Allowed Bottom Time After A Previous Dive.\n" +
-											   "This Could Also Be Caused By An Invalid Surface Interval Time.\n" +
-											   "Error Location:\t\t\t\t\t" + "DivePlanner -> addDive()\n" +
-											   "Given Bottom Time:\t\t\t\t" + bottomTime + "\n" +
-											   "Max Allowable Bottom Time Of Next Dive:\t\t" + adjustedNoDecompressionLimitTime + "\n");
+		// check if valid surface interval and bottom time
+		if (this.errorCheck) {
+			if ((this.previousDives.size() > 0)) {
+				if (surfaceInterval < minSurfaceInterval) {
+					throw new IllegalArgumentException("ERROR: Given Surface Interval Time Is Below The Minimum Surface Interval Time After A Previous Dive.\n" +
+							   						   "This Could Also Be Caused By An Invalid Bottom Time At The Given Surface Interval.\n" +
+							                           "Error Location:\t\t\t\t\t\t" + "DivePlanner -> addDive()\n" +
+							                           "Given Surface Interval Time:\t\t\t\t" + surfaceInterval + "\n" +
+							                           "Minimum Allowable Surface Interval Of Next Dive:\t" + (float)minSurfaceInterval + "\n" +
+							                           "Dive Number:\t\t\t\t\t\t" + diveNumber + "\n");
+				}
+				if (bottomTime > adjustedNoDecompressionLimitTime) {
+					throw new IllegalArgumentException("ERROR: Given Bottom Time Exceed The Maximum Allowed Bottom Time After A Previous Dive.\n" +
+							                           "This Could Also Be Caused By An Invalid Surface Interval Time At The Given Depth.\n" +
+							                           "Error Location:\t\t\t\t\t" + "DivePlanner -> addDive()\n" +
+							                           "Given Bottom Time:\t\t\t\t" + bottomTime + "\n" +
+							                           "Max Allowable Bottom Time Of Next Dive:\t\t" + adjustedNoDecompressionLimitTime + "\n" +
+							                           "Dive Number:\t\t\t\t\t" + diveNumber + "\n");
+				}
+				
+			} 
 		}
-		
 		Dive dive = new Dive(diveNumber, 							nextDiveDepth, 					previousPressureGroupFromTBT, 		
-							 newPressureGroupAfterPreviousDive,		decompressionStop,				surfaceIntervalAfterDive, 					
-							 minSurfaceInterval,					newPressureGroupFromTBT,		adjustedNoDecompressionLimitTime,
-							 residualNitrogenTime, 					actualBottomTime, 				totalBottomTime);
-		
+				 			 newPressureGroupAfterPreviousDive,		decompressionStop,				surfaceIntervalAfterDive, 					
+				 			 minSurfaceInterval,					newPressureGroupFromTBT,		adjustedNoDecompressionLimitTime,
+				 			 residualNitrogenTime, 					actualBottomTime, 				totalBottomTime);
+
 		// add to recent dives
 		this.previousDives.add(dive);
+		
 	}
 	
 	/**
@@ -133,9 +171,11 @@ public class DivePlanner {
 	 * @throws IllegalStateException
 	 */
 	public void printAllDives() {
-		if (this.previousDives.isEmpty()) {
-			throw new IllegalStateException("ERROR: No Dives Were Not Created.\n" +
-											"Error Location:\t" + "DivePlanner -> printAllDives\n");
+		if (this.errorCheck){ 
+			if (this.previousDives.isEmpty()) {
+				throw new IllegalStateException("ERROR: No Dives Were Not Created.\n" +
+												"Error Location:\t" + "DivePlanner -> printAllDives\n");
+			}
 		}
 		for (int i = 0; i < this.previousDives.size(); i++) {
 			System.out.println("*******************************************************************************\n" + 
@@ -162,11 +202,13 @@ public class DivePlanner {
 	private int adjustDepth(int searchDepth) {
 		int[] 	validDepths = this.diveTable.getValidDepths();	// array of valid depths
 		int 	depthIndex 	= DivePlannerUtility.binarySearch(validDepths, searchDepth);
-		if ((depthIndex < 0) || (depthIndex >= validDepths.length)) {
-			throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
-												"Error Location:\t\t\t" + "DivePlanner -> adjustDepth()\n" +
-												"Calculated Index Of Depth:\t" + depthIndex + "\n" +
-												"Maximum Index of Valid Depths:\t" + (validDepths.length-1) + "\n");
+		if (this.errorCheck){ 
+			if ((depthIndex < 0) || (depthIndex >= validDepths.length)) {
+				throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
+													"Error Location:\t\t\t" + "DivePlanner -> adjustDepth()\n" +
+													"Calculated Index Of Depth:\t" + depthIndex + "\n" +
+													"Maximum Index of Valid Depths:\t" + (validDepths.length-1) + "\n");
+			}
 		}
 		return validDepths[depthIndex];
 	}
@@ -182,11 +224,13 @@ public class DivePlanner {
 		LinkedHashMap<Integer, int[]> 	validBottomTimes 						= this.diveTable.getValidBottomTimes();
 		int[] 							validTimesAtDepth 						= validBottomTimes.get(desiredDepth);
 		int 							time_index 								= DivePlannerUtility.binarySearch(validTimesAtDepth, searchTimeAtDepth);
-		if ((time_index < 0) || (time_index >= validTimesAtDepth.length)) {
-			throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
-												"Error Location:\t\t\t\t\t" + "DivePlanner -> adjustActualBottomTime()\n" +
-												"Calculated Index From Bottom Times:\t\t" + time_index + "\n" +
-												"Maximum Index Of Bottom Times At Depth " + desiredDepth + ":\t" + (validTimesAtDepth.length-1) + "\n");
+		if (this.errorCheck){ 
+			if ((time_index < 0) || (time_index >= validTimesAtDepth.length)) {
+				throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
+													"Error Location:\t\t\t\t\t" + "DivePlanner -> adjustActualBottomTime()\n" +
+													"Calculated Index From Bottom Times:\t\t" + time_index + "\n" +
+													"Maximum Index Of Bottom Times At Depth " + desiredDepth + ":\t" + (validTimesAtDepth.length-1) + "\n");
+			}
 		}
 		return validTimesAtDepth[time_index];
 	}
@@ -212,11 +256,15 @@ public class DivePlanner {
 		LinkedHashMap<Character, double[]> 	validSurfaceIntervalTimes 			= this.diveTable.getValidSurfaceIntervalTimes();
 		double[] 							pressureGroupSurfaceIntervalTimes 	= validSurfaceIntervalTimes.get(pressureGroup);	
 		int 								surfaceIntervalIndex				= DivePlannerUtility.binarySearchReverseDouble(pressureGroupSurfaceIntervalTimes, surfaceInterval);
-		if ((surfaceIntervalIndex < 0) || (surfaceIntervalIndex >= pressureGroupSurfaceIntervalTimes.length)) {
-			throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
-												"Error Location:\t" + "DivePlanner -> adjustSurfaceInterval()\n" +
-												"Calculated Index From Pressure Group At Surface Interval:\t" + surfaceIntervalIndex + "\n" +
-												"Maximum Index Of SurFaceInterval Times At Pressure Group " + pressureGroup + ":\t" + (pressureGroupSurfaceIntervalTimes.length-1) + "\n");
+		if (this.errorCheck) {
+			if ((surfaceIntervalIndex < 0) || (surfaceIntervalIndex >= pressureGroupSurfaceIntervalTimes.length)) {
+				throw new IndexOutOfBoundsException("ERROR: Invalid Surface Interval For Pressure Group\n" +
+													"Error Location:\t\t\t\t\t\t\t" + "DivePlanner -> adjustSurfaceInterval()\n" +
+													"Calculated Index From Pressure Group At Surface Interval:\t" + surfaceIntervalIndex + "\n" +
+													"Maximum Index Of SurfaceInterval Times At Pressur Group:\t" + (pressureGroupSurfaceIntervalTimes.length-1) + "\n" +
+													"Pressure Group:\t\t\t\t\t\t\t" + pressureGroup + "\n" + 
+													"Maximum SurfaceInterval At Depth:\t\t\t\t" + pressureGroupSurfaceIntervalTimes[0] + "\n");
+			}
 		}
 		return pressureGroupSurfaceIntervalTimes[surfaceIntervalIndex];
 	}
@@ -230,12 +278,14 @@ public class DivePlanner {
 	private char calcPressureGroup(char pressureGroup, double surfaceInterval) {
 		LinkedHashMap<Character, double[]> 	validSurfaceIntervalTimes 				= this.diveTable.getValidSurfaceIntervalTimes();
 		double[] 							surfaceIntervalTimesAtPressureGroup 	= validSurfaceIntervalTimes.get(pressureGroup);
-		int 								pressureGroupIndex					= DivePlannerUtility.binarySearchReverseDouble(surfaceIntervalTimesAtPressureGroup, surfaceInterval);		
-		if ((pressureGroupIndex < 0) || (pressureGroupIndex >= surfaceIntervalTimesAtPressureGroup.length)) {
-			throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
-												"Error Location:\t\t\t\t\t\t\t" + "DivePlanner -> calcPressureGroup()\n" +
-												"Calculated Index From Pressure Group At Surface Interval:\t" + pressureGroupIndex + "\n" +
-												"Maximum Index Of SurFaceInterval Times At Pressure Group " + pressureGroup + ":\t" + (surfaceIntervalTimesAtPressureGroup.length-1) + "\n");
+		int 								pressureGroupIndex						= DivePlannerUtility.binarySearchReverseDouble(surfaceIntervalTimesAtPressureGroup, surfaceInterval);		
+		if (this.errorCheck) {
+			if ((pressureGroupIndex < 0) || (pressureGroupIndex >= surfaceIntervalTimesAtPressureGroup.length)) {
+				throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
+													"Error Location:\t\t\t\t\t\t\t" + "DivePlanner -> calcPressureGroup()\n" +
+													"Calculated Index From Pressure Group At Surface Interval:\t" + pressureGroupIndex + "\n" +
+													"Maximum Index Of SurFaceInterval Times At Pressure Group " + pressureGroup + ":\t" + (surfaceIntervalTimesAtPressureGroup.length-1) + "\n");
+			}
 		}
 		return this.diveTable.getValidPressureGroup(pressureGroupIndex);
 	}
@@ -250,34 +300,49 @@ public class DivePlanner {
 		LinkedHashMap<Integer, int[]> 	validResidualNitrogen			= this.diveTable.getValidResidualNitrogenTimes();
 		int[] 							residualNitrogenTimeAtDepth 	= validResidualNitrogen.get(this.adjustDepth(nextDiveDepth));
 		int 							pressureGroupIndex				= this.diveTable.getIndexOfPressureGroup(newPressureGroupAfterPreviousDive);
-		if ((pressureGroupIndex < 0) || (pressureGroupIndex >= residualNitrogenTimeAtDepth.length)) {
-			throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
-												"Error Location:\t\t\t\t\t" + "DivePlanner -> calcResidualNitrogenTime()\n" +
-												"Calculated Index Of Nitrogen Time At Depth:\t" + pressureGroupIndex + "\n" +
-												"Maximum Index Of Nitrogen Time At Depth " + nextDiveDepth + ":\t" + (residualNitrogenTimeAtDepth.length-1) + "\n");
+		if (this.errorCheck){ 
+			if ((pressureGroupIndex < 0) || (pressureGroupIndex >= residualNitrogenTimeAtDepth.length)) {
+				throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
+													"Error Location:\t\t\t\t\t" + "DivePlanner -> calcResidualNitrogenTime()\n" +
+													"Calculated Index Of Nitrogen Time At Depth:\t" + pressureGroupIndex + "\n" +
+													"Maximum Index Of Nitrogen Time At Depth " + nextDiveDepth + ":\t" + (residualNitrogenTimeAtDepth.length-1) + "\n");
+			}
 		}
 		return residualNitrogenTimeAtDepth[pressureGroupIndex];	
 	}
 	
 	/**
-	 * calculate the adjusted no decompression limit (ANDL) time
-	 * this limit should not exceed actual bottom time (ABT)
+	 * Calculate the adjusted no decompression limit (ANDL) time
+	 * Actual bottom time (ABT) should not exceed this limit
 	 * AKA: MAXIMUM ALLOWED DEPTH from a previous dive
 	 * @param nextDiveDepth
 	 * @param newPressureGroupAfterPreviousDive
 	 * @return
 	 */
 	private int calcAdjustedNoDecompressionLimitTime(int nextDiveDepth, char newPressureGroupAfterPreviousDive) {
+		/*if (this.errorCheck) {
+			if (nextDiveDepth == this.diveTable.getValidDepths()[this.diveTable.getValidDepths().length-1]) {
+				throw new NullPointerException("ERROR: Entered A Depth That Does Not Have An Adjusted No Decompression Limit Time\n" +
+						   "Error Location:\t\t\t\t\t\t\t" + "DivePlanner -> calcAdjustedNoDecompressionLimitTime()\n" +
+						   "Depth Entered:\t\t\t\t\t\t\t" + nextDiveDepth + "\n" +
+						   "Maximum Depth (ft) For An Adjusted No Decompression Limit:\t" + 130 + "\n");
+
+			}
+		}*/
+		
 		LinkedHashMap<Integer, int[]> 	getAdjustedNoDecompressionLimitTimes 		= this.diveTable.getValidAdjustedNoDecompressionLimitTimes();
 		int[] 							adjustedNoDecompressionLimitTimesAtDepth 	= getAdjustedNoDecompressionLimitTimes.get(this.adjustDepth(nextDiveDepth));
 		int								pressureGroupIndex							= this.diveTable.getIndexOfPressureGroup(newPressureGroupAfterPreviousDive);
-		if ((pressureGroupIndex < 0) || (pressureGroupIndex >= adjustedNoDecompressionLimitTimesAtDepth.length)) {
-			throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
-												"Error Location:\t\t\t\t\t\t\t\t" + "DivePlanner -> calcAdjustedNoDecompressionLimitTime()\n" +
-												"Calculated Index Of Adjusted No Decompression Limit Time At Depth:\t" + pressureGroupIndex + "\n" +
-												"Maximum Index Of Adjusted No Decompression Limit Time At Depth " + nextDiveDepth + ":\t" + (adjustedNoDecompressionLimitTimesAtDepth.length-1) + "\n");
+		if (this.errorCheck) {
+			if ((pressureGroupIndex < 0) || (pressureGroupIndex >= adjustedNoDecompressionLimitTimesAtDepth.length)) {
+				throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
+													"Error Location:\t\t\t\t\t\t\t\t" + "DivePlanner -> calcAdjustedNoDecompressionLimitTime()\n" +
+													"Calculated Index Of Adjusted No Decompression Limit Time At Depth:\t" + pressureGroupIndex + "\n" +
+													"Maximum Index Of Adjusted No Decompression Limit Time At Depth " + nextDiveDepth + ":\t" + (adjustedNoDecompressionLimitTimesAtDepth.length-1) + "\n");
+			} 
 		}
 		return adjustedNoDecompressionLimitTimesAtDepth[pressureGroupIndex];
+
 	}
 	
 	/**
@@ -298,17 +363,19 @@ public class DivePlanner {
 	 * @return
 	 */
 	private double calcMinSurfaceIntervalTime(char previousPressureGroupFromTBT, int nextDiveDepth, int adjustedActualBottomTime) {
-		LinkedHashMap<Integer, int[]> 		validBottomTimes 			= this.diveTable.getValidAdjustedNoDecompressionLimitTimes(); 	// reused method to calculate pressure Group
+		LinkedHashMap<Integer, int[]> 		validBottomTimes 			= this.diveTable.getValidAdjustedNoDecompressionLimitTimes(); 	
 		LinkedHashMap<Character, double[]> 	validSurfaceIntervalTimes 	= this.diveTable.getValidSurfaceIntervalTimes();
 		double[] 							surfaceIntervalTimeAtDepth 	= validSurfaceIntervalTimes.get(previousPressureGroupFromTBT);
-		int[] 								bottomTimesAtDepth 			= validBottomTimes.get(nextDiveDepth);	
+		int[] 								bottomTimesAtDepth 			= validBottomTimes.get(nextDiveDepth);		
 		int 								bottomTimeIndex 			= DivePlannerUtility.binarySearchReverseInt(bottomTimesAtDepth, adjustedActualBottomTime);
 		char 								pressureGroup 				= this.diveTable.getValidPressureGroup(bottomTimeIndex);
-		if ((bottomTimeIndex < 0) || (bottomTimeIndex >= bottomTimesAtDepth.length)) {
-			throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
-												"Error Location:\t\t\t\t\t\t\t" + "DivePlanner -> calcMinSurfaceIntervalTime()\n" +
-												"Calculated Index Of Minimum Surface Interval Time At Depth:\t" + bottomTimeIndex + "\n" +
-												"Maximum Index Of Bottom Time At Depth " + nextDiveDepth + ":\t\t\t" + (bottomTimesAtDepth.length-1) + "\n");
+		if (this.errorCheck){ 
+			if ((bottomTimeIndex < 0) || (bottomTimeIndex >= bottomTimesAtDepth.length)) {
+				throw new IndexOutOfBoundsException("ERROR: Index Out Of Bounds\n" +
+													"Error Location:\t\t\t\t\t\t\t" + "DivePlanner -> calcMinSurfaceIntervalTime()\n" +
+													"Calculated Index Of Minimum Surface Interval Time At Depth:\t" + bottomTimeIndex + "\n" +
+													"Maximum Index Of Bottom Time At Depth " + nextDiveDepth + ":\t\t\t" + (bottomTimesAtDepth.length-1) + "\n");
+			}
 		}
 		if (previousPressureGroupFromTBT <= pressureGroup) {
 			return 0;	// the first surfaceInterval time is the minimum surface interval (all beginning surface intervals have value zero)
@@ -455,13 +522,17 @@ public class DivePlanner {
 			actualDiveNumber = diveNumber - 1; // array starts at zero
 		}
 	
-		if ((actualDiveNumber >= this.previousDives.size()) || (actualDiveNumber < 0)) {
-			throw new IndexOutOfBoundsException("ERROR: The Dive Number Does not Exist.\n" +
-												"Error Location:\t" + "DivePlanner -> removeDive()\n");
-		} else {
-			for (int i = this.previousDives.size()-1; i >= actualDiveNumber; i--) {
-				this.previousDives.remove(i);
-			}
+		if (this.errorCheck) { 
+			if ((actualDiveNumber >= this.previousDives.size()) || (actualDiveNumber < 0)) {
+				if (this.errorCheck){ 
+					throw new IndexOutOfBoundsException("ERROR: The Dive Number Does not Exist.\n" +
+														"Error Location:\t" + "DivePlanner -> removeDive()\n");
+				}
+			} 
+		}
+		
+		for (int i = this.previousDives.size()-1; i >= actualDiveNumber; i--) {
+			this.previousDives.remove(i);
 		}
 	}
 	
@@ -471,11 +542,22 @@ public class DivePlanner {
 	 * @throws IllegalStateException
 	 */
 	public LinkedList<Dive> getDivePlan() {
-		if (this.previousDives.isEmpty()) {
-			throw new IllegalStateException("ERROR: No Dive Was Created.\n" +
-										    "Error Location:\t" + "DivePlanner -> getDivePlan()\n");
+		if (this.errorCheck){ 
+			if (this.previousDives.isEmpty()) {
+				throw new IllegalStateException("ERROR: No Dive Was Created.\n" +
+											    "Error Location:\t" + "DivePlanner -> getDivePlan()\n");
+			}
 		}
 		return this.previousDives;
+	}
+	
+	/**
+	 * get the number of dives that was created
+	 * if a dive(s) has been deleted, it will not count those deleted dive(s)
+	 * @return
+	 */
+	public int getTotalDives() {
+		return this.previousDives.size();
 	}
 	
 	/**
@@ -484,79 +566,86 @@ public class DivePlanner {
 	 */
 	public void saveDivePlan() {		
 		// NOT YET IMPLEMENTED
-		if (this.previousDives.isEmpty()) {
-			throw new IllegalStateException("ERROR: There Are No Dives To Save. Please Create A Dive.\n" + 
-											"Error Location:\t" + "DivePlanner -> saveDivePlan()\n");
-		} else {
-			// SAVE USING THE "DiveProfileManager" CLASS HERE...
-			LinkedList<Dive> divesToSave = getDivePlan();
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
+		if (this.errorCheck) {
+			if (this.previousDives.isEmpty()) {
+				throw new IllegalStateException("ERROR: There Are No Dives To Save. Please Create A Dive.\n" + 
+												"Error Location:\t" + "DivePlanner -> saveDivePlan()\n");
+			} 
 		}
+		
+		// SAVE USING THE "DiveProfileManager" CLASS HERE...
+		LinkedList<Dive> divesToSave = getDivePlan();
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
 	}
 	
 	// DIVER ONLY (ONLY USE FOR MINOR TESTING. J-UNIT TESTING IS REQUIRED)
 	public static void main(String[] args) {
-		int 	depth 			= 60;
-		int 	bottomTime 		= 39;						// ABT
+		int 	depth 			= 140;
+		int 	bottomTime 		= 8;						// ABT
 		double 	surfaceInterval = 0;						// THERE IS NO SURFACE INTERVAL FOR FIRST DIVE
 		try {
 			// dive 1
 			DivePlanner dt = new DivePlanner(depth, bottomTime, surfaceInterval);
 			
 			// dive 2
-			depth 					= 50;	
-			bottomTime				= 10;					// ABT		
-			surfaceInterval 		= 0.10;		
+			depth 					= 130;	
+			bottomTime				= 5;					// ABT		
+			surfaceInterval 		= 1.00;		
 			dt.addDive(depth, bottomTime, surfaceInterval);		
 		
 			// dive 3
-			depth 					= 40;		
-			bottomTime 				= 80;					// ABT
+			depth 					= 120;		
+			bottomTime 				= 5;					// ABT
 			surfaceInterval 		= 1.00;		
 			dt.addDive(depth, bottomTime, surfaceInterval);	
 			
 			// dive 4
 			depth 					= 30;		
-			bottomTime 				= 60;					// ABT
-			surfaceInterval 		= 1.00;		
+			bottomTime 				= 50;					// ABT
+			surfaceInterval 		= 2.00;		
 			dt.addDive(depth, bottomTime, surfaceInterval);	
 			
+
 			System.out.println("<<DIVEPLANNER: DEBUG>>");
 			dt.printAllDives();
 		
 			// remove a dive
-			System.out.println("\n*******************************************************************************\n" + 
+			/*System.out.println("\n*******************************************************************************\n" + 
 							   "\n\t\t\t   <<REMOVING A DIVE>>\n" + 
 							   "REMOVING A DIVE ALSO REMOVES THE DIVES THAT ARE AHEAD OF THE REMOVED DIVE\n");
 			dt.removeDive(3);
 			dt.printAllDives();
+			*/
+			
 
 			//LinkedList<Dive> dives = dt.getDivePlan();
 			//Dive d = dives.get(0);
 			//dt.getActualBottomTime(d);
 			//dt.getAdjustedNoDecompressionLimitTimes(d);
+			
+			System.out.println("Total Dives: " + dt.getTotalDives());
 			dt.saveDivePlan();
-			
-			
-			
-		} catch (IllegalStateException x) {
+		} catch (IllegalStateException w) {
 			// THESE ERROR CHECKS ARE ONLY USED FOR DEBUGGING
 			// DO NOT PUT MESSAGE IN GUI
 			// GUI WILL USE COLORS INSTEAD
+			System.err.println(w.getMessage());
+		} /*catch (IndexOutOfBoundsException x) {
 			System.err.println(x.getMessage());
-		} catch (IndexOutOfBoundsException y) {
+		} catch (IllegalArgumentException y) {
 			System.err.println(y.getMessage());
-		} catch (IllegalArgumentException z) {
+		} catch (NullPointerException z) {
 			System.err.println(z.getMessage());
-		}
+		}*/
 	}
 }
