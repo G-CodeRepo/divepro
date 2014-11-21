@@ -13,32 +13,28 @@ import java.util.LinkedList;
 public class DiveProfileManager {
 	public DiveProfileManager() {
 		// NOT YET IMPLEMENTED
-
-		
-		
-		
-		
-		
-		
 	}
 	
 	public void saveDive (Calendar date, LinkedList<Dive> dive) {
 		// CALENDAR IS ACTUAL AN ABSTRACT CLASS AND YOU WILL HAVE TO CREATE THE METHODS
-		// BUT YOU CAN CHANGE IT TO WHATEVER SUITES YOU (e.g. String, etc.)
-		
-		
-		
-		
-		
-		
-		
-		
-		
+		// BUT YOU CAN CHANGE IT TO WHATEVER SUITES YOU (e.g. String, etc.)	
+		BufferedWriter writer = null;
+        try {
+            String diveLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+            File diveFile = new File(diveLog);
+
+            System.out.println(diveFile.getCanonicalPath());
+
+            writer = new BufferedWriter(new FileWriter(diveFile));
+            writer.write("Hello world!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                writer.close();
+            } catch (Exception e) {
+            }
+        }
 		
 	}
-	
-	
-	
-	
-	
 }
