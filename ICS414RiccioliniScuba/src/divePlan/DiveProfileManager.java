@@ -2,6 +2,8 @@ package divePlan;
 
 import java.util.Calendar;
 import java.util.LinkedList;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 
 /**
@@ -34,7 +36,6 @@ public class DiveProfileManager {
                 writer.close();
             } catch (Exception e) {
             }
-        }
-		
+        }	
 	}
 }
