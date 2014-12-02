@@ -11,6 +11,7 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import org.eclipse.swt.widgets.Text;
 
 
+@SuppressWarnings("unused")
 public class DivePlannerGUI {
 
 	protected Shell DivePlannerHome;
@@ -23,6 +24,7 @@ public class DivePlannerGUI {
 	private Button btnHistory;
 	private Button btnHelp;
 	private Button btnNewDive;
+	
 	private Text dateDay;
 	private Text dateMonth;
 	private Text dateYear;
@@ -39,7 +41,7 @@ public class DivePlannerGUI {
 	private Label lblDisclaimerBody;
 	private Label lblDisclaimerBody2;
 	private Label lblDisclaimerBody3;
-
+	
 	private Label lblDate;
 	private Label lblTime;
 	private Label lblDepth;
