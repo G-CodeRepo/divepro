@@ -211,32 +211,7 @@ public class DivePlannerGUI {
 						@Override
 						public void widgetSelected(SelectionEvent s) {
 							try {
-									/*int indexTimeUnder = 0;
-									LinkedHashMap<Integer, int[]> bottomTimes= valuesTable.getValidBottomTimes();
-									final int intBottomTimes[] = bottomTimes.get(Integer.parseInt((depth.getText())));
-									String strBottomTimes[] = new String[intBottomTimes.length];
-								
-									for(int i = 0; i < strBottomTimes.length; i++)
-									{
-										strBottomTimes[i] = intBottomTimes[i] + "";
-									}
-								
-									for(int i = 0; i < strBottomTimes.length; i++)
-									{
-										System.out.println(strBottomTimes[i]);
-										System.out.println(timeUnder.getText());
-										if(intBottomTimes[i] >= Integer.parseInt(timeUnder.getText()))
-										{
-											
-											indexTimeUnder = i;
-											break;
-											
-										}	
-									}///System.out.println(indexTimeUnder);
-									//System.out.println(prevPressureGroup);
 									
-									
-									*/
 									char currPressureGroup;
 									
 									if(dives != null)
@@ -449,7 +424,7 @@ public class DivePlannerGUI {
 					lblTutorialBody3.setText("The current depth must never be greater than the previous depth.");
 					
 					lblTutorialBody4 = new Label(DivePlannerHome, SWT.NONE);
-					lblTutorialBody4.setBounds(20, 170, 509, 20);
+					lblTutorialBody4.setBounds(20, 170, 515, 20);
 					lblTutorialBody4.setText("In some cases, a value will not work due to nitrogen conc. from previous dives.");
 					
 					lblTutorialBody5 = new Label(DivePlannerHome, SWT.NONE);
